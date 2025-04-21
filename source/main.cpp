@@ -13,7 +13,7 @@ const float MOVE_SPEED = 200.f;
 const Vector2u WINDOW_SIZE(1920, 1200);
 
 void SaveFile(int slot) {
-    string filename = "saves/save" + to_string(slot + 1) + ".txt";
+    string filename = "assets/saves/save" + to_string(slot + 1) + ".txt";
     ofstream file(filename);
     if (file.is_open()) {
         file.close();
@@ -41,7 +41,7 @@ int main() {
     GameState state = GameState::Menu;
     //Menu i grafika
     Font font;
-    if (!font.openFromFile("txtures/fonts/font1.otf")) {
+    if (!font.openFromFile("assets/fonts/font1.otf")) {
         cout << "Font not available!" << endl;
         return 1;
     }
@@ -91,7 +91,7 @@ int main() {
     bool isFullscreen = false;
     
     Music music;
-    if (music.openFromFile("audio/music1.ogg")) {
+    if (music.openFromFile("assets/sounds/music/cos")) {
         music.setLooping(true);
         music.setVolume(musicVolume);
         music.play();
@@ -99,11 +99,11 @@ int main() {
         cout << "Music not available!" << endl;
     }
 
-    Texture texture;
-    if (!texture.loadFromFile("txtures/Cos.png")) {
-        cout << "Background not available!" << endl;
-    }
-    Sprite sprite(texture);
+    // Texture texture;
+    // if (!texture.loadFromFile("txtures/Cos.png")) {
+    //     cout << "Background not available!" << endl;
+    // }
+    // Sprite sprite(texture);
 
     int saveSelectedIndex = 0;
 
@@ -279,7 +279,7 @@ int main() {
             handleInput(movement);
             player.move(movement * dt);
 
-            window.draw(sprite);
+            // window.draw(sprite);
             window.draw(player);
         }
         else if (state == GameState::Settings) {
