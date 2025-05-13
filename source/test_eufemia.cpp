@@ -1,68 +1,62 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <cmath>
-#include "bosses.hpp"
+#include <iostream>
+#include <cstdlib>
 #include "hero.hpp"
-//PLIK ZOSTANIE DODANY DO MAIN LECZ GDY ZROBIONA BĘDZIE JUŻ MAPA
+#include "bosses.hpp"
+#include "projectile.hpp"
+#include "crystal.hpp"
+#include "ui.hpp"
+#include "platform.hpp"
+
 using namespace sf;
 using namespace std;
 
 int main() {
+    ContextSettings settings;
+    settings.antiAliasingLevel = 8;
     Vector2u WINDOW_SIZE(1920, 1080);
-    RenderWindow window(WINDOW_SIZE, "Judgement Day", State::Fullscreen);
+    RenderWindow window(VideoMode(WINDOW_SIZE), "Judgement Day", State::Fullscreen, settings);
+    window.setFramerateLimit(60);
 
     Hero player(100.f, WINDOW_SIZE.y - 150.f, 20);
-    Boss witch(835.f, 440.f, Color::Green);
+    Boss witch(WINDOW_SIZE.x / 2.f - 30.f, 440.f, Color::Green, 20);
     witch.shape.setSize({60.f, 100.f});
 
     Crystal leftCrystal(100.f, 150.f);
-    Crystal rightCrystal(1790.f, 150.f);
+    Crystal rightCrystal(WINDOW_SIZE.x - 130.f, 150.f);
 
     vector<Projectile> projectiles;
     Clock clock;
     float shootTimer = 0.f;
     const float shootInterval = 1.f;
 
-    RectangleShape platform;
-    platform.setSize(Vector2f(WINDOW_SIZE.x, 50.f));
-    platform.setPosition(Vector2f(0.f, WINDOW_SIZE.y - 50.f));
-    platform.setFillColor(Color::Green);
+    Platform platform(Vector2f(WINDOW_SIZE.x, 50.f), Vector2f(0.f, WINDOW_SIZE.y - 50.f), Color(50, 205, 50));
+    UI hpBar(WINDOW_SIZE, player.hp, witch.hp);
 
     bool onGround = false;
+    bool isShooting = false;
+    bool playerHit = false;
+    float hitTimer = 0.f;
+    bool isBossPhaseTwo = false;
 
     while (window.isOpen()) {
         float deltaTime = clock.restart().asSeconds();
-
-        if (Keyboard::isKeyPressed(Keyboard::Key::A))
-            player.move(60.f, deltaTime);
-        if (Keyboard::isKeyPressed(Keyboard::Key::D))
-            player.move(60.f, deltaTime);
-
-        if (player.shape.getPosition().x < 0.f)
-            player.shape.setPosition(Vector2f(0.f, player.shape.getPosition().y));
-        if (player.shape.getPosition().x + player.shape.getSize().x > WINDOW_SIZE.x)
-            player.shape.setPosition(Vector2f(WINDOW_SIZE.x - player.shape.getSize().x, player.shape.getPosition().y));
-
-        if (player.shape.getGlobalBounds().findIntersection(platform.getGlobalBounds())) {
-            onGround = true;
-            player.shape.setPosition(Vector2f(player.shape.getPosition().x, platform.getPosition().y - player.shape.getSize().y));
-        } else {
-            onGround = false;
-        }
+        
+        player.handleMovement(deltaTime, 200.f, window.getSize());
+        player.handleJumping(deltaTime, WINDOW_SIZE.y - 150.f);
+        
         shootTimer += deltaTime;
         if (shootTimer >= shootInterval) {
             shootTimer = 0.f;
             if (leftCrystal.alive) {
-                Vector2f dirToPlayer = player.shape.getPosition() - leftCrystal.shape.getPosition();
-                float length = sqrt(dirToPlayer.x * dirToPlayer.x + dirToPlayer.y * dirToPlayer.y);
-                dirToPlayer /= length;
-                projectiles.emplace_back(leftCrystal.shape.getPosition().x, leftCrystal.shape.getPosition().y, dirToPlayer * 300.f);
+                Vector2f dir = player.shape.getPosition() - leftCrystal.shape.getPosition();
+                projectiles.push_back(Projectile(leftCrystal.shape.getPosition().x, leftCrystal.shape.getPosition().y, dir * 400.f));
             }
             if (rightCrystal.alive) {
-                Vector2f dirToPlayer = player.shape.getPosition() - rightCrystal.shape.getPosition();
-                float length = sqrt(dirToPlayer.x * dirToPlayer.x + dirToPlayer.y * dirToPlayer.y);
-                dirToPlayer /= length;
-                projectiles.emplace_back(rightCrystal.shape.getPosition().x, rightCrystal.shape.getPosition().y, dirToPlayer * 300.f);
+                Vector2f dir = player.shape.getPosition() - rightCrystal.shape.getPosition();
+                projectiles.push_back(Projectile(rightCrystal.shape.getPosition().x, rightCrystal.shape.getPosition().y, dir * 400.f));
             }
         }
 
@@ -73,6 +67,8 @@ int main() {
         for (auto i = projectiles.begin(); i != projectiles.end();) {
             if (i->shape.getGlobalBounds().findIntersection(player.shape.getGlobalBounds())) {
                 player.hp -= 1;
+                playerHit = true;
+                hitTimer = 0.2f;
                 i = projectiles.erase(i);
             } else {
                 ++i;
@@ -81,19 +77,38 @@ int main() {
 
         if (!leftCrystal.alive || !rightCrystal.alive) {
             witch.shape.setFillColor(Color::Red);
+            if (!isBossPhaseTwo) {
+                isBossPhaseTwo = true;
+            }
         }
 
-        window.clear(Color::Black);
-        window.draw(player.shape);
+        if (isBossPhaseTwo) {
+            witch.phaseTwoAttack(player, projectiles);
+        }
+
+        if (hitTimer > 0.f) {
+            hitTimer -= deltaTime;
+            player.shape.setFillColor(Color::Red);
+        } else {
+            player.shape.setFillColor(Color::Blue);
+        }
+
+        hpBar.update(player.hp, witch.hp);
+
+        window.clear();
+        window.draw(platform.shape);
         window.draw(witch.shape);
-        if (leftCrystal.alive)
-            window.draw(leftCrystal.shape);
-        if (rightCrystal.alive)
-            window.draw(rightCrystal.shape);
+        window.draw(hpBar.hpBarBack);
+        window.draw(hpBar.hpBar);
+        if (leftCrystal.alive) window.draw(leftCrystal.shape);
+        if (rightCrystal.alive) window.draw(rightCrystal.shape);
+        
         for (auto& proj : projectiles) {
+            proj.shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
             window.draw(proj.shape);
         }
-        window.draw(platform);
+        
+        player.draw(window);
         window.display();
     }
 

@@ -1,27 +1,25 @@
-#ifndef HERO
-#define HERO
+#ifndef HERO_HPP
+#define HERO_HPP
 
 #include <SFML/Graphics.hpp>
 using namespace sf;
-using namespace std;
-
 class Hero {
-private:
-    Texture texture;
-    Sprite sprite;
 public:
     RectangleShape shape;
-    Vector2f velocity;
-    float speed;
     int hp;
-    string weapon;
+    bool isJumping;
+    float jumpSpeed;
 
-    Hero(float x, float y, int HP = 100);
+    Hero(float x, float y, int HP) : hp(HP), isJumping(false), jumpSpeed(0.f) {
+        shape.setSize(Vector2f(50.f, 80.f));
+        shape.setFillColor(Color::Blue);
+        shape.setPosition(Vector2f(x, y));
+    }
 
-    void move(float speed, float deltaTime);
-    void attack();
-    void takeDamage(int damage);
-    void draw(RenderWindow &window);
+    void handleMovement(float deltaTime, float speed, Vector2u windowSize);
+    void handleJumping(float deltaTime, float groundHeight);
+    void takeDamage(int damage) { hp -= damage; }
+    void draw(RenderWindow& window) { window.draw(shape); }
 };
 
 #endif

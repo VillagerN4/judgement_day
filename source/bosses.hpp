@@ -1,40 +1,25 @@
-#ifndef BOSSES
-#define BOSSES
+#ifndef BOSSES_HPP
+#define BOSSES_HPP
 
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include "projectile.hpp"
+#include "hero.hpp"
 using namespace sf;
 using namespace std;
-
 class Boss {
 public:
     RectangleShape shape;
-    float speed;
     int hp;
 
-    Boss(float x, float y, Color color, int hp = 10);
+    Boss(float x, float y, Color color, int HP) : hp(HP) {
+        shape.setSize({60.f, 100.f});
+        shape.setPosition(Vector2f(x, y));
+        shape.setFillColor(color);
+    }
 
-    void move(float offsetX);
-};
-
-class Projectile {
-public:
-    CircleShape shape;
-    Vector2f velocity;
-
-    Projectile(float x, float y, Vector2f vel);
-
-    void update(float deltaTime);
-};
-
-class Crystal {
-public:
-    RectangleShape shape;
-    int hp;
-    bool alive;
-
-    Crystal(float x, float y);
-
-    void takeDamage(int dmg);
+    void takeDamage(int damage) { hp -= damage; }
+    void phaseTwoAttack(Hero& player, vector<Projectile>& projectiles);
 };
 
 #endif

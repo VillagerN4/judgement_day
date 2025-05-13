@@ -1,37 +1,21 @@
-#include "Bosses.hpp"
-
-Boss::Boss(float x, float y, Color color, int hp) : hp(hp) {
-    shape.setSize({50.f, 80.f});
-    shape.setPosition(Vector2f(x, y));
-    shape.setFillColor(color);
-    speed = 200.f;
-}
-
-void Boss::move(float offsetX) {
-    shape.move({offsetX, 0.f});
-}
-
-Projectile::Projectile(float x, float y, Vector2f vel) : velocity(vel) {
-    shape.setRadius(40.f);
-    shape.setFillColor(Color::Magenta);
-    shape.setPosition({x, y});
-}
-
-void Projectile::update(float deltaTime) {
-    shape.move(velocity * deltaTime);
-}
-
-Crystal::Crystal(float x, float y) {
-    shape.setSize({30.f, 30.f});
-    shape.setFillColor(Color::Cyan);
-    shape.setPosition({x, y});
-    hp = 5;
-    alive = true;
-}
-
-void Crystal::takeDamage(int dmg) {
-    hp -= dmg;
-    if (hp <= 0) {
-        alive = false;
+#include "bosses.hpp"
+#include "hero.hpp"
+#include <cmath>
+using namespace sf;
+using namespace std;
+void Boss::phaseTwoAttack(Hero& player, vector<Projectile>& projectiles) {
+    if (rand() % 2 == 0) {
+        Vector2f laserDir = player.shape.getPosition() - shape.getPosition();
+        float len = sqrt(laserDir.x * laserDir.x + laserDir.y * laserDir.y);
+        laserDir /= len;
+        projectiles.push_back(Projectile(shape.getPosition().x, shape.getPosition().y, laserDir * 600.f));
+    } else {
+        for (int i = -1; i <= 1; i++) {
+            Vector2f flameDir = player.shape.getPosition() - shape.getPosition();
+            float len = sqrt(flameDir.x * flameDir.x + flameDir.y * flameDir.y);
+            flameDir /= len;
+            flameDir.x += i * 100.f;
+            projectiles.push_back(Projectile(shape.getPosition().x, shape.getPosition().y, flameDir * 300.f));
+        }
     }
 }
