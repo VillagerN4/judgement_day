@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <fstream>
 #include <iostream>
+#include "map.hpp"
 
 using namespace sf;
 using namespace std;
@@ -10,7 +11,7 @@ enum class GameState { Menu, Settings, Credits, Game, SaveSelect, GameOptions };
 
 const float PLAYER_SIZE = 50.f;
 const float MOVE_SPEED = 200.f;
-const Vector2u WINDOW_SIZE(1920, 1200);
+const Vector2u WINDOW_SIZE(1920, 1080);
 
 void SaveFile(int slot) {
     string filename = "assets/saves/save" + to_string(slot + 1) + ".txt";
@@ -43,7 +44,6 @@ int main() {
     Font font;
     if (!font.openFromFile("assets/fonts/font1.otf")) {
         cout << "Font not available!" << endl;
-        return 1;
     }
 
     Text gameOptions[4] = {
@@ -91,7 +91,7 @@ int main() {
     bool isFullscreen = false;
     
     Music music;
-    if (music.openFromFile("assets/sounds/music/cos")) {
+    if (music.openFromFile("assets/sounds/music/RightBehindYou.wav")) {
         music.setLooping(true);
         music.setVolume(musicVolume);
         music.play();
