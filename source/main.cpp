@@ -46,6 +46,28 @@ int main() {
         cout << "Font not available!" << endl;
     }
 
+    Texture panorama_texture;
+    if (!panorama_texture.loadFromFile("assets\\textures\\gui\\menu_panorama.png", false, IntRect({0, 0}, {544, 288})))
+    {
+       cout << "Menu panorama not found!" << endl;
+    }
+
+    Sprite panorama(panorama_texture);
+    panorama.setPosition({-16.f, -16.f});
+    panorama.setScale({3.75f, 3.75f});
+
+    VertexArray options_fade(PrimitiveType::TriangleStrip, 4);
+
+    options_fade[0].position = Vector2f(0.f, 475.f);
+    options_fade[1].position = Vector2f(0.f, 1080.f);
+    options_fade[2].position = Vector2f(475.f, 475.f);
+    options_fade[3].position = Vector2f(475.f, 1080.f);
+
+    options_fade[0].color = Color::Black;
+    options_fade[1].color = Color::Black;
+    options_fade[2].color = Color(0, 0, 0, 0);
+    options_fade[3].color = Color(0, 0, 0, 0);
+
     Text gameOptions[4] = {
         Text(font, "Resume game", 80),
         Text(font, "Options", 80),
@@ -269,6 +291,8 @@ int main() {
 
         if (state == GameState::Menu) {
             isGame = false;
+            window.draw(panorama);
+            window.draw(options_fade);
             window.draw(title);
             for (const auto& item : menuItems)
                 window.draw(item);
