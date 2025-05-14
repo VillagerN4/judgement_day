@@ -2,7 +2,8 @@
 #include <SFML/Audio.hpp>
 #include <fstream>
 #include <iostream>
-#include "map.hpp"
+#include "hero.hpp"
+#include "bosses.hpp"
 
 using namespace sf;
 using namespace std;
@@ -14,7 +15,7 @@ const float MOVE_SPEED = 200.f;
 const Vector2u WINDOW_SIZE(1920, 1080);
 
 void SaveFile(int slot) {
-    string filename = "assets/saves/save" + to_string(slot + 1) + ".txt";
+    string filename = "saves/save" + to_string(slot + 1) + ".txt";
     ofstream file(filename);
     if (file.is_open()) {
         file.close();
@@ -42,7 +43,7 @@ int main() {
     GameState state = GameState::Menu;
     //Menu i grafika
     Font font;
-    if (!font.openFromFile("assets/fonts/font1.otf")) {
+    if (!font.openFromFile("txtures/fonts/font1.otf")) {
         cout << "Font not available!" << endl;
     }
 
@@ -113,7 +114,7 @@ int main() {
     bool isFullscreen = false;
     
     Music music;
-    if (music.openFromFile("assets/sounds/music/RightBehindYou.wav")) {
+    if (music.openFromFile("audio/music1.ogg")) {
         music.setLooping(true);
         music.setVolume(musicVolume);
         music.play();
@@ -121,12 +122,13 @@ int main() {
         cout << "Music not available!" << endl;
     }
 
-    // Texture texture;
-    // if (!texture.loadFromFile("txtures/Cos.png")) {
-    //     cout << "Background not available!" << endl;
-    // }
-    // Sprite sprite(texture);
+    Texture texture;
+    Texture angel;
+    if (!texture.loadFromFile("txtures/Cos.png")) {
+        cout << "Background not available!" << endl;
+    }
 
+    Sprite sprite(texture);
     int saveSelectedIndex = 0;
 
     Text saveSlots[3] = {
@@ -299,12 +301,12 @@ int main() {
         }
         else if (state == GameState::Game) {
             isGame = true;
-            Vector2f movement(0.f, 0.f);
-            handleInput(movement);
-            player.move(movement * dt);
+            // Vector2f movement(0.f, 0.f);
+            // handleInput(movement);
+            // player.move(movement * dt);
 
             // window.draw(sprite);
-            window.draw(player);
+            // window.draw(player);
         }
         else if (state == GameState::Settings) {
             Vector2f settingsSize(WINDOW_SIZE.x / 2.f, WINDOW_SIZE.y / 2.f);
@@ -382,5 +384,3 @@ int main() {
 
     return 0;
 }
-
-
