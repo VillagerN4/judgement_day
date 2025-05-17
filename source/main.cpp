@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <fstream>
 #include <iostream>
+#include "map.hpp"
 #include "hero.hpp"
 #include "bosses.hpp"
 
@@ -37,19 +38,32 @@ void handleInput(Vector2f& movement) {
 }
 
 int main() {
+    
+    Texture horse;
+    if (!horse.loadFromFile("assets\\textures\\horse.png")){
+       cout << "Horse not found!" << endl;
+       return -1;
+    }
+
+    Texture tileset;
+    if (!tileset.loadFromFile("assets\\textures\\tile\\tileset.png", false, IntRect({0, 0}, {544, 288}))){
+       cout << "Tileset texture not found!" << endl;
+    }
+
+    Map test(tileset, 10, 10, 32.0f, 32.0f);
+
     RenderWindow window(VideoMode(WINDOW_SIZE), "Judgement Day");
     window.setFramerateLimit(60);
 
     GameState state = GameState::Menu;
     //Menu i grafika
     Font font;
-    if (!font.openFromFile("txtures/fonts/font1.otf")) {
+    if (!font.openFromFile("assets\\fonts\\font1.otf")) {
         cout << "Font not available!" << endl;
     }
 
     Texture panorama_texture;
-    if (!panorama_texture.loadFromFile("assets\\textures\\gui\\menu_panorama.png", false, IntRect({0, 0}, {544, 288})))
-    {
+    if (!panorama_texture.loadFromFile("assets\\textures\\gui\\menu_panorama.png", false, IntRect({0, 0}, {544, 288}))){
        cout << "Menu panorama not found!" << endl;
     }
 
@@ -114,7 +128,7 @@ int main() {
     bool isFullscreen = false;
     
     Music music;
-    if (music.openFromFile("audio/music1.ogg")) {
+    if (music.openFromFile("assets\\sounds\\music\\RightBehindYou.wav")) {
         music.setLooping(true);
         music.setVolume(musicVolume);
         music.play();
@@ -122,13 +136,6 @@ int main() {
         cout << "Music not available!" << endl;
     }
 
-    Texture texture;
-    Texture angel;
-    if (!texture.loadFromFile("txtures/Cos.png")) {
-        cout << "Background not available!" << endl;
-    }
-
-    Sprite sprite(texture);
     int saveSelectedIndex = 0;
 
     Text saveSlots[3] = {
@@ -301,6 +308,7 @@ int main() {
         }
         else if (state == GameState::Game) {
             isGame = true;
+            window.draw(test);
             // Vector2f movement(0.f, 0.f);
             // handleInput(movement);
             // player.move(movement * dt);
