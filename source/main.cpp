@@ -2,28 +2,53 @@
 #include <SFML/Audio.hpp>
 #include <fstream>
 #include <iostream>
-#include "hero.hpp"
-#include "bosses.hpp"
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <map>
+#include <string>
+#include <cmath>
+#include <algorithm>
 
 using namespace sf;
 using namespace std;
 
-enum class GameState { Menu, Settings, Credits, Game, SaveSelect, GameOptions };
+enum class GameState { Menu, Settings, Credits, Game, BossSelect, GameOptions, Guitar, Eufemia };
 
 const float PLAYER_SIZE = 50.f;
 const float MOVE_SPEED = 200.f;
 const Vector2u WINDOW_SIZE(1920, 1080);
 
-void SaveFile(int slot) {
-    string filename = "saves/save" + to_string(slot + 1) + ".txt";
-    ofstream file(filename);
-    if (file.is_open()) {
-        file.close();
-        cout << "Save " << slot + 1 << " created!" << endl;
-    } else {
-        cerr << "Could not create save file!" << endl;
+const int NUM_LANES = 6;
+float NOTE_SPEED = 550.f;
+const float SPAWN_INTERVAL = 0.3f;
+const float NOTE_RADIUS = 20.f;
+const float TARGET_Y = 900.f;
+const float HIT_WINDOW = 50.f;
+const int MAX_NOTES = 1000;
+const int MAX_MISSES = 20;
+
+
+
+struct Note {
+    CircleShape shape;
+    int lane;
+    bool active = true;
+
+    Note(int lane, float startY) : lane(lane) {
+        shape.setRadius(NOTE_RADIUS);
+        shape.setOrigin(Vector2f(NOTE_RADIUS, NOTE_RADIUS));
+        shape.setFillColor(Color::Red);
+        float laneWidth = 160.f;
+        shape.setPosition(Vector2f(100.f + lane * laneWidth + 80.f, startY));
     }
-}
+
+    void update(float dt) {
+        shape.move(Vector2f(0, NOTE_SPEED * dt));
+        if (shape.getPosition().y > 1080)
+            active = false;
+    }
+};
 
 void handleInput(Vector2f& movement) {
     if (Keyboard::isKeyPressed(Keyboard::Key::W))
@@ -39,13 +64,88 @@ void handleInput(Vector2f& movement) {
 int main() {
     RenderWindow window(VideoMode(WINDOW_SIZE), "Judgement Day");
     window.setFramerateLimit(60);
-
+    srand(static_cast<unsigned>(time(0)));
     GameState state = GameState::Menu;
     //Menu i grafika
+    
+    vector<Note> notes;
+    vector<Text> keyTexts;
+    vector<CircleShape> hitMarkers;
+
+    notes.reserve(MAX_NOTES);
+    map<int, Keyboard::Key> laneKeys = {
+        {0, Keyboard::Key::A},
+        {1, Keyboard::Key::S},
+        {2, Keyboard::Key::D},
+        {3, Keyboard::Key::J},
+        {4, Keyboard::Key::K},
+        {5, Keyboard::Key::L}
+    };
+
+    map<int, string> keyLabels = {
+        {0, "A"},
+        {1, "S"},
+        {2, "D"},
+        {3, "J"},
+        {4, "K"},
+        {5, "L"}
+    };
+
+
+
     Font font;
     if (!font.openFromFile("txtures/fonts/font1.otf")) {
         cout << "Font not available!" << endl;
     }
+
+    Text scoreText(font, "", 32);
+    scoreText.setFillColor(Color::White);
+    scoreText.setPosition(Vector2f(20.f, 20.f));
+
+    Text resultText(font, "", 80);
+    resultText.setFillColor(Color::Red);
+    FloatRect resultBounds = resultText.getLocalBounds();
+    resultText.setOrigin(Vector2f(resultBounds.position.x / 2, resultBounds.position.y / 2));
+    resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+
+    RectangleShape targetBar(Vector2f(160.f * NUM_LANES, 10.f));
+    targetBar.setFillColor(Color::White);
+    targetBar.setPosition(Vector2f(100.f, TARGET_Y));
+
+    for (int i = 0; i < NUM_LANES; ++i) {
+        Text keyText(font, keyLabels[i], 36);
+        keyText.setFillColor(Color::White);
+        keyText.setPosition(Vector2f(100.f + i * 160.f + 70.f, TARGET_Y + 40.f));
+        keyTexts.push_back(keyText);
+
+        CircleShape hitMarker(NOTE_RADIUS);
+        hitMarker.setOrigin(Vector2f(NOTE_RADIUS, NOTE_RADIUS));
+        hitMarker.setFillColor(Color::White);
+        hitMarker.setPosition(Vector2f(100.f + i * 160.f + 80.f, TARGET_Y));
+        hitMarkers.push_back(hitMarker);
+    }
+
+    float spawnTimer = 0.f;
+    int notesSpawned = 0;
+    int score = 0;
+    int misses = 0;
+    bool gameOver = false;
+    bool victory = false;
+    int streak = 0;
+    bool screenFlash = false;
+    float flashTimer = 0.f;
+
+    float hitFlashTimers[NUM_LANES] = {0};
+    const float HIT_FLASH_DURATION = 0.1f;
+
+    float scoreFlashTimer = 0.f;
+    bool scoreFlashing = false;
+
+    Color normalMarkerColor = Color::White;
+    Color flashColor = Color::Red;
+
+    RectangleShape flashOverlay(Vector2f(1920, 1080));
+    flashOverlay.setFillColor(Color::Red);
 
     Text gameOptions[4] = {
         Text(font, "Resume game", 80),
@@ -107,17 +207,16 @@ int main() {
     }
 
     Sprite sprite(texture);
-    int saveSelectedIndex = 0;
+    int BossSelectedIndex = 0;
 
-    Text saveSlots[3] = {
-        Text(font, "Save 1", 100),
-        Text(font, "Save 2", 100),
-        Text(font, "Save 3", 100)
+    Text bossSlots[2] = {
+        Text(font, "Boss 1", 100),
+        Text(font, "Boss 2", 100)
     };
 
-    for (int i = 0; i < 3; ++i) {
-        saveSlots[i].setPosition(Vector2f(100.f, 400.f + i * 150.f));
-        saveSlots[i].setFillColor(i == saveSelectedIndex ? Color::Red : Color::White);
+    for (int i = 0; i < 2; ++i) {
+        bossSlots[i].setPosition(Vector2f(100.f, 400.f + i * 150.f));
+        bossSlots[i].setFillColor(i == BossSelectedIndex ? Color::Red : Color::White);
     }
 
     //Tu zaczyna się gra
@@ -127,7 +226,7 @@ int main() {
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
-
+        window.clear(Color::Black);
         while (auto event = window.pollEvent()) {
             if (event->is<Event::Closed>())
                 window.close();
@@ -148,7 +247,7 @@ int main() {
                         }
                         else if (keyEvent->code == Keyboard::Key::Enter) {
                             if (selectedIndex == 0) {
-                                state = GameState::SaveSelect;
+                                state = GameState::BossSelect;
                             }
                             else if (selectedIndex == 1) {
                                 state = GameState::Settings;
@@ -200,23 +299,24 @@ int main() {
                     }
                 }
             }
-            else if (state == GameState::SaveSelect) {
+            else if (state == GameState::BossSelect) {
                 if (event->is<Event::KeyPressed>()) {
                     auto keyEvent = event->getIf<Event::KeyPressed>();
                     if (keyEvent) {
-                        if (keyEvent->code == Keyboard::Key::W && saveSelectedIndex > 0) {
-                            saveSlots[saveSelectedIndex].setFillColor(Color::White);
-                            saveSelectedIndex--;
-                            saveSlots[saveSelectedIndex].setFillColor(Color::Red);
+                        if (keyEvent->code == Keyboard::Key::W && BossSelectedIndex > 0) {
+                            bossSlots[BossSelectedIndex].setFillColor(Color::White);
+                            BossSelectedIndex--;
+                            bossSlots[BossSelectedIndex].setFillColor(Color::Red);
                         }
-                        else if (keyEvent->code == Keyboard::Key::S && saveSelectedIndex < 2) {
-                            saveSlots[saveSelectedIndex].setFillColor(Color::White);
-                            saveSelectedIndex++;
-                            saveSlots[saveSelectedIndex].setFillColor(Color::Red);
+                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 1) {
+                            bossSlots[BossSelectedIndex].setFillColor(Color::White);
+                            BossSelectedIndex++;
+                            bossSlots[BossSelectedIndex].setFillColor(Color::Red);
                         }
                         else if (keyEvent->code == Keyboard::Key::Enter) {
-                            SaveFile(saveSelectedIndex);
-                            state = GameState::Game;
+                            if(BossSelectedIndex == 0){
+                                state = GameState::Guitar;
+                            }
                         }
                         else if (keyEvent->code == Keyboard::Key::Escape) {
                             state = GameState::Menu;
@@ -263,9 +363,106 @@ int main() {
                         }
                     }
                 }
+            } else if (state == GameState::Guitar){
+            if (!gameOver && notesSpawned < MAX_NOTES) {
+                spawnTimer += dt;
+                while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
+                    spawnTimer -= SPAWN_INTERVAL;
+                    int lane = rand() % NUM_LANES;
+                    notes.emplace_back(lane, -NOTE_RADIUS);
+                    notesSpawned++;
+                }
             }
-        }
 
+            for (auto& n : notes)
+                n.update(dt);
+
+            for (int lane = 0; lane < NUM_LANES; ++lane) {
+                if (Keyboard::isKeyPressed(laneKeys[lane])) {
+                    for (auto& note : notes) {
+                        if (note.lane == lane && note.active) {
+                            float yDist = abs(note.shape.getPosition().y - TARGET_Y);
+                            if (yDist <= HIT_WINDOW) {
+                                note.active = false;
+                                score += 100;
+                                streak++;
+                                hitFlashTimers[lane] = HIT_FLASH_DURATION;
+                                scoreFlashTimer = HIT_FLASH_DURATION;
+                                scoreFlashing = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (auto& note : notes) {
+                if (note.active && note.shape.getPosition().y > TARGET_Y + HIT_WINDOW) {
+                    note.active = false;
+                    misses++;
+                    streak = 0;
+                    NOTE_SPEED = 550.f;
+                }
+            }
+
+            notes.erase(remove_if(notes.begin(), notes.end(), [](Note& n) { return !n.active; }), notes.end());
+
+            bool anyLaneFlashing = false;
+            for (int i = 0; i < NUM_LANES; ++i) {
+                if (hitFlashTimers[i] > 0) {
+                    hitFlashTimers[i] -= dt;
+                    hitMarkers[i].setFillColor(flashColor);
+                    anyLaneFlashing = true;
+                } else {
+                    hitMarkers[i].setFillColor(normalMarkerColor);
+                }
+            }
+
+            targetBar.setFillColor(anyLaneFlashing ? flashColor : normalMarkerColor);
+
+            if (scoreFlashing) {
+                if (scoreFlashTimer > 0) {
+                    scoreFlashTimer -= dt;
+                    scoreText.setFillColor(flashColor);
+                } else {
+                    scoreFlashing = false;
+                    scoreText.setFillColor(normalMarkerColor);
+                }
+            }
+
+            scoreText.setString("Score: " + to_string(score) + "    Misses: " + to_string(misses) + "/" + to_string(MAX_MISSES) + "    Streak: " + to_string(streak));
+
+            if (misses >= MAX_MISSES) {
+                gameOver = true;
+                resultText.setString("Game Over");
+                FloatRect textBounds = resultText.getLocalBounds();
+                resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
+                resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+            } else if (notesSpawned == MAX_NOTES && notes.empty()) {
+                gameOver = true;
+                victory = true;
+                resultText.setString("Boss Defeated!");
+                FloatRect textBounds = resultText.getLocalBounds();
+                resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
+                resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+            }
+
+            if (streak >= 60) {
+                flashTimer += dt;
+                if (flashTimer >= 0.2f) {
+                    flashTimer = 0.f;
+                    screenFlash = !screenFlash;
+                }
+            } else if (streak == 20) {
+                NOTE_SPEED = 600.f;
+            } else if (streak == 40) {
+                NOTE_SPEED = 700.f;
+            }
+
+                }
+            }
+    
+        
 
         window.clear();
 
@@ -275,14 +472,21 @@ int main() {
             for (const auto& item : menuItems)
                 window.draw(item);
         }
-        else if (state == GameState::Game) {
+        else if (state == GameState::Guitar) {
             isGame = true;
-            // Vector2f movement(0.f, 0.f);
-            // handleInput(movement);
-            // player.move(movement * dt);
-
-            // window.draw(sprite);
-            // window.draw(player);
+            window.clear(Color::Black);
+            window.draw(targetBar);
+            for (auto& hitMarker : hitMarkers)
+                window.draw(hitMarker);
+            for (auto& keyText : keyTexts)
+                window.draw(keyText);
+            for (auto& n : notes)
+                window.draw(n.shape);
+            window.draw(scoreText);
+            if (gameOver)
+                window.draw(resultText);
+            if (screenFlash)
+                window.draw(flashOverlay);
         }
         else if (state == GameState::Settings) {
             Vector2f settingsSize(WINDOW_SIZE.x / 2.f, WINDOW_SIZE.y / 2.f);
@@ -316,13 +520,13 @@ int main() {
             modeText.setPosition(Vector2f(settingsPos.x + 550.f, settingsPos.y + 150.f));
             window.draw(modeText);
         }
-        else if (state == GameState::SaveSelect) {
-            Text saveTitle(font, "Select Save", 108);
+        else if (state == GameState::BossSelect) {
+            Text saveTitle(font, "Select Boss", 108);
             saveTitle.setPosition(Vector2f(100.f, 200.f));
             saveTitle.setFillColor(Color::Red);
             window.draw(saveTitle);
 
-            for (const auto& slot : saveSlots)
+            for (const auto& slot : bossSlots)
                 window.draw(slot);
         }
         else if (state == GameState::GameOptions) {
@@ -360,3 +564,4 @@ int main() {
 
     return 0;
 }
+
