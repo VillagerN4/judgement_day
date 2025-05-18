@@ -12,8 +12,12 @@ class Tile
     public:
         int tilesetX;
         int tilesetY;
+        Color loadColor;
+        int subtileCount;
 
-        Tile(int x, int y);
+        Tile(int x, int y, Color loadColor, int subtileCount);
+
+        Tile();
 };
 
 #endif

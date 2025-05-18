@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "tile.hpp"
+#include "stb_image.h"
 #include <fstream>
 #include <iostream>
 
@@ -25,6 +26,8 @@ class Map : public Drawable
     public:
 
         Map(Texture tileset, int mapWidth, int mapHeight, float tileSize, float tileDisplaySize);
+
+        Map(Texture tileset, const char* mapPath, float tileSize, float tileDisplaySize);
 
         Map();
         

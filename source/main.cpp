@@ -38,6 +38,12 @@ void handleInput(Vector2f& movement) {
 }
 
 int main() {
+
+    RenderWindow window(VideoMode(WINDOW_SIZE), "Judgement Day");
+    window.setFramerateLimit(60);
+
+    GameState state = GameState::Menu;
+    //Menu i grafika
     
     Texture horse;
     if (!horse.loadFromFile("assets\\textures\\horse.png")){
@@ -50,13 +56,8 @@ int main() {
        cout << "Tileset texture not found!" << endl;
     }
 
-    Map test(tileset, 10, 10, 32.0f, 32.0f);
+    Map test(tileset, "source\\map\\level_data\\test_level.bmp", 32.0f, 5.0f);
 
-    RenderWindow window(VideoMode(WINDOW_SIZE), "Judgement Day");
-    window.setFramerateLimit(60);
-
-    GameState state = GameState::Menu;
-    //Menu i grafika
     Font font;
     if (!font.openFromFile("assets\\fonts\\font1.otf")) {
         cout << "Font not available!" << endl;
