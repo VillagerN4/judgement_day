@@ -25,7 +25,7 @@ const float SPAWN_INTERVAL = 0.3f;
 const float NOTE_RADIUS = 20.f;
 const float TARGET_Y = 900.f;
 const float HIT_WINDOW = 50.f;
-const int MAX_NOTES = 1000;
+const int MAX_NOTES = 100;
 const int MAX_MISSES = 20;
 
 
@@ -134,7 +134,7 @@ int main() {
     int streak = 0;
     bool screenFlash = false;
     float flashTimer = 0.f;
-
+    float cleanUpTimer = 0.f;
     float hitFlashTimers[NUM_LANES] = {0};
     const float HIT_FLASH_DURATION = 0.1f;
 
@@ -226,7 +226,7 @@ int main() {
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
-        window.clear(Color::Black);
+       (Color::Black);
         while (auto event = window.pollEvent()) {
             if (event->is<Event::Closed>())
                 window.close();
@@ -364,100 +364,108 @@ int main() {
                     }
                 }
             } else if (state == GameState::Guitar){
-            if (!gameOver && notesSpawned < MAX_NOTES) {
-                spawnTimer += dt;
-                while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
-                    spawnTimer -= SPAWN_INTERVAL;
-                    int lane = rand() % NUM_LANES;
-                    notes.emplace_back(lane, -NOTE_RADIUS);
-                    notesSpawned++;
+        if (!gameOver && notesSpawned < MAX_NOTES) {
+            spawnTimer += dt;
+            while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
+                spawnTimer -= SPAWN_INTERVAL;
+                int lane = rand() % NUM_LANES;
+                notes.emplace_back(lane, -NOTE_RADIUS);
+                notesSpawned++;
+            }
+        }
+
+        for (auto& n : notes)
+            n.update(dt);
+
+        for (int lane = 0; lane < NUM_LANES; ++lane) {
+            if (Keyboard::isKeyPressed(laneKeys[lane])) {
+                auto it = find_if(notes.begin(), notes.end(), [lane](const Note& note) {
+                    return note.lane == lane && note.active;
+            });
+            if (it != notes.end()) {
+                float yDist = abs(it->shape.getPosition().y - TARGET_Y);
+                if (yDist <= HIT_WINDOW) {
+                    it->active = false;
+                    score += 100;
+                    streak++;
+                    hitFlashTimers[lane] = HIT_FLASH_DURATION;
+                    scoreFlashTimer = HIT_FLASH_DURATION;
+                    scoreFlashing = true;
                 }
             }
+        }
+        }
 
-            for (auto& n : notes)
-                n.update(dt);
+        
 
-            for (int lane = 0; lane < NUM_LANES; ++lane) {
-                if (Keyboard::isKeyPressed(laneKeys[lane])) {
-                    for (auto& note : notes) {
-                        if (note.lane == lane && note.active) {
-                            float yDist = abs(note.shape.getPosition().y - TARGET_Y);
-                            if (yDist <= HIT_WINDOW) {
-                                note.active = false;
-                                score += 100;
-                                streak++;
-                                hitFlashTimers[lane] = HIT_FLASH_DURATION;
-                                scoreFlashTimer = HIT_FLASH_DURATION;
-                                scoreFlashing = true;
-                                break;
-                            }
-                        }
-                    }
-                }
+        for (auto& note : notes) {
+            if (note.active && note.shape.getPosition().y > TARGET_Y + HIT_WINDOW) {
+                note.active = false;
+                misses++;
+                streak = 0;
+                NOTE_SPEED = 550.f;
             }
+        }
 
-            for (auto& note : notes) {
-                if (note.active && note.shape.getPosition().y > TARGET_Y + HIT_WINDOW) {
-                    note.active = false;
-                    misses++;
-                    streak = 0;
-                    NOTE_SPEED = 550.f;
-                }
-            }
-
+        cleanUpTimer += dt;
+        if (cleanUpTimer >= 1.0f) {
             notes.erase(remove_if(notes.begin(), notes.end(), [](Note& n) { return !n.active; }), notes.end());
+            cleanUpTimer = 0.f;
+        }
 
-            bool anyLaneFlashing = false;
-            for (int i = 0; i < NUM_LANES; ++i) {
-                if (hitFlashTimers[i] > 0) {
-                    hitFlashTimers[i] -= dt;
-                    hitMarkers[i].setFillColor(flashColor);
-                    anyLaneFlashing = true;
-                } else {
-                    hitMarkers[i].setFillColor(normalMarkerColor);
-                }
+
+        bool anyLaneFlashing = false;
+        for (int i = 0; i < NUM_LANES; ++i) {
+            if (hitFlashTimers[i] > 0) {
+                hitFlashTimers[i] -= dt;
+                hitMarkers[i].setFillColor(flashColor);
+                anyLaneFlashing = true;
+            } else {
+                hitMarkers[i].setFillColor(normalMarkerColor);
             }
+        }
 
-            targetBar.setFillColor(anyLaneFlashing ? flashColor : normalMarkerColor);
+        targetBar.setFillColor(anyLaneFlashing ? flashColor : normalMarkerColor);
 
-            if (scoreFlashing) {
-                if (scoreFlashTimer > 0) {
-                    scoreFlashTimer -= dt;
-                    scoreText.setFillColor(flashColor);
-                } else {
-                    scoreFlashing = false;
-                    scoreText.setFillColor(normalMarkerColor);
-                }
+        if (scoreFlashing) {
+            if (scoreFlashTimer > 0) {
+                scoreFlashTimer -= dt;
+                scoreText.setFillColor(flashColor);
+            } else {
+                scoreFlashing = false;
+                scoreText.setFillColor(normalMarkerColor);
             }
+        }
 
-            scoreText.setString("Score: " + to_string(score) + "    Misses: " + to_string(misses) + "/" + to_string(MAX_MISSES) + "    Streak: " + to_string(streak));
+        scoreText.setString("Score: " + to_string(score) + "    Misses: " + to_string(misses) + "/" + to_string(MAX_MISSES) + "    Streak: " + to_string(streak));
 
-            if (misses >= MAX_MISSES) {
-                gameOver = true;
-                resultText.setString("Game Over");
-                FloatRect textBounds = resultText.getLocalBounds();
-                resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
-                resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
-            } else if (notesSpawned == MAX_NOTES && notes.empty()) {
-                gameOver = true;
-                victory = true;
-                resultText.setString("Boss Defeated!");
-                FloatRect textBounds = resultText.getLocalBounds();
-                resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
-                resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+        if (misses >= MAX_MISSES) {
+            gameOver = true;
+            resultText.setString("Game Over");
+            FloatRect textBounds = resultText.getLocalBounds();
+            resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
+            resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+        } else if (notesSpawned == MAX_NOTES && notes.empty()) {
+            gameOver = true;
+            victory = true;
+            resultText.setString("Boss Defeated!");
+            FloatRect textBounds = resultText.getLocalBounds();
+            resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
+            resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+        }
+
+        if (streak >= 60) {
+            flashTimer += dt;
+            if (flashTimer >= 0.2f) {
+                flashTimer = 0.f;
+                screenFlash = !screenFlash;
             }
-
-            if (streak >= 60) {
-                flashTimer += dt;
-                if (flashTimer >= 0.2f) {
-                    flashTimer = 0.f;
-                    screenFlash = !screenFlash;
-                }
-            } else if (streak == 20) {
-                NOTE_SPEED = 600.f;
-            } else if (streak == 40) {
-                NOTE_SPEED = 700.f;
-            }
+        } else if (streak == 20) {
+            NOTE_SPEED = 600.f;
+        } else if (streak == 40) {
+            NOTE_SPEED = 700.f;
+        }
+    
 
                 }
             }
