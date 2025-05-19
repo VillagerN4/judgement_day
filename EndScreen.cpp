@@ -44,3 +44,20 @@ void EndScreen::show(bool playerWon) {
         m_window.display();
     }
 }
+
+/* Jak uzywac w main.cpp
+#include <SFML/Graphics.hpp>
+#include "EndScreen.hpp"
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(800, 600), "RPG Boss Battle");
+
+    EndScreen endScreen(window);
+    bool playerWon = true; // albo false, w zależności od wyniku walki
+    endScreen.show(playerWon);
+
+    return 0;
+}
+*/
+
+
