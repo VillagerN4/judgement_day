@@ -163,7 +163,7 @@ int main() {
     Color flashColor = Color::Red;
 
     RectangleShape flashOverlay(Vector2f(1920, 1080));
-    flashOverlay.setFillColor(Color::Red);
+    flashOverlay.setFillColor(Color(20,0,0));
 
     Text gameOptions[4] = {
         Text(font, "Resume game", 80),
@@ -247,12 +247,13 @@ int main() {
 
     int BossSelectedIndex = 0;
 
-    Text bossSlots[2] = {
+    Text bossSlots[3] = {
         Text(font, "Boss 1", 100),
-        Text(font, "Boss 2", 100)
+        Text(font, "Boss 2", 100),
+        Text(font, "testy", 100)
     };
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 3; ++i) {
         bossSlots[i].setPosition(Vector2f(100.f, 400.f + i * 150.f));
         bossSlots[i].setFillColor(i == BossSelectedIndex ? Color::Red : Color::White);
     }
@@ -327,7 +328,7 @@ int main() {
                                 selectedSettingsIndex--;
                                 settingsItems[selectedSettingsIndex].setFillColor(Color::Red);
                             }
-                            else if (keyEvent->code == Keyboard::Key::S && selectedSettingsIndex < 1) {
+                            else if (keyEvent->code == Keyboard::Key::S && selectedSettingsIndex < 2) {
                                 settingsItems[selectedSettingsIndex].setFillColor(Color::White);
                                 selectedSettingsIndex++;
                                 settingsItems[selectedSettingsIndex].setFillColor(Color::Red);
@@ -364,7 +365,7 @@ int main() {
                             BossSelectedIndex--;
                             bossSlots[BossSelectedIndex].setFillColor(Color::Red);
                         }
-                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 1) {
+                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 2) {
                             bossSlots[BossSelectedIndex].setFillColor(Color::White);
                             BossSelectedIndex++;
                             bossSlots[BossSelectedIndex].setFillColor(Color::Red);
