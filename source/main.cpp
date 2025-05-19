@@ -32,7 +32,7 @@ const float SPAWN_INTERVAL = 0.3f;
 const float NOTE_RADIUS = 20.f;
 const float TARGET_Y = 900.f;
 const float HIT_WINDOW = 50.f;
-const int MAX_NOTES = 300;
+const int MAX_NOTES = 750;
 const int MAX_MISSES = 20;
 
 
@@ -152,7 +152,7 @@ int main() {
     int streak = 0;
     bool screenFlash = false;
     float flashTimer = 0.f;
-
+    bool isGuitar = false;
     float hitFlashTimers[NUM_LANES] = {0};
     const float HIT_FLASH_DURATION = 0.1f;
 
@@ -185,10 +185,9 @@ int main() {
 
     int selectedSettingsIndex = 0;
 
-    Text menuItems[4] = {
+    Text menuItems[3] = {
         Text(font, "Start", 108),
         Text(font, "Settings", 108),
-        Text(font, "Credits", 108),
         Text(font, "Exit", 108)
     };
 
@@ -197,7 +196,7 @@ int main() {
     title.setPosition(Vector2f(WINDOW_SIZE.x - 1300.f, 20.f));
     title.setFillColor(Color::Red);
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 3; ++i) {
         menuItems[i].setPosition(Vector2f(40.f, 500.f + i * 110));
         menuItems[i].setFillColor(i == selectedIndex ? Color::Red : Color::White);
     }
@@ -216,6 +215,13 @@ int main() {
         music.play();
     } else {
         cout << "Music not available!" << endl;
+    }
+
+    Music guitar_music;
+    if (guitar_music.openFromFile("assets\\sounds\\music\\MEDIC.wav")) {
+        guitar_music.setVolume(musicVolume);
+    } else {
+        cout << "Medic not available!" << endl;
     }
 
     Texture panorama_texture;
@@ -241,13 +247,12 @@ int main() {
 
     int BossSelectedIndex = 0;
 
-    Text bossSlots[3] = {
+    Text bossSlots[2] = {
         Text(font, "Boss 1", 100),
-        Text(font, "Boss 2", 100),
-        Text(font, "Map Test", 100)
+        Text(font, "Boss 2", 100)
     };
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 2; ++i) {
         bossSlots[i].setPosition(Vector2f(100.f, 400.f + i * 150.f));
         bossSlots[i].setFillColor(i == BossSelectedIndex ? Color::Red : Color::White);
     }
@@ -294,7 +299,7 @@ int main() {
                             selectedIndex--;
                             menuItems[selectedIndex].setFillColor(Color::Red);
                         }
-                        else if (keyEvent->code == Keyboard::Key::S && selectedIndex < 3) {
+                        else if (keyEvent->code == Keyboard::Key::S && selectedIndex < 2) {
                             menuItems[selectedIndex].setFillColor(Color::White);
                             selectedIndex++;
                             menuItems[selectedIndex].setFillColor(Color::Red);
@@ -305,9 +310,6 @@ int main() {
                             }
                             else if (selectedIndex == 1) {
                                 state = GameState::Settings;
-                            }
-                            else if (selectedIndex == 2) {
-                                state = GameState::Credits;
                             }
                             else {
                                 window.close();
@@ -362,17 +364,23 @@ int main() {
                             BossSelectedIndex--;
                             bossSlots[BossSelectedIndex].setFillColor(Color::Red);
                         }
-                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 2) {
+                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 1) {
                             bossSlots[BossSelectedIndex].setFillColor(Color::White);
                             BossSelectedIndex++;
                             bossSlots[BossSelectedIndex].setFillColor(Color::Red);
                         }
                         else if (keyEvent->code == Keyboard::Key::Enter) {
                             if(BossSelectedIndex == 0){
+                                music.stop();
+                                guitar_music.play();
+                                gameOver = false;
+                                misses = 0;
                                 state = GameState::Guitar;
                             }else if(BossSelectedIndex == 1){
+                                music.stop();
                                 state = GameState::Eufemia;
                             }else if(BossSelectedIndex == 2){
+                                music.stop();
                                 state = GameState::MapTest;
                             }
                         }
@@ -406,13 +414,16 @@ int main() {
                         }
                         else if (keyEvent->code == Keyboard::Key::Enter) {
                             if (gameOptionsSelectedIdex == 0) {
-                                state = GameState::Game;
+                                if (isGuitar == true){
+                                    state = GameState::Guitar;
+                                }
                             }
                         else if (gameOptionsSelectedIdex == 1){
                                 
                                 state = GameState::Settings;
                             }
                             else if (gameOptionsSelectedIdex == 2){
+                                music.play();
                                 state = GameState::Menu;
                             }
                         }
@@ -422,6 +433,7 @@ int main() {
                     }
                 }
             } else if (state == GameState::Guitar){
+                            isGuitar = true;
             if (!gameOver && notesSpawned < MAX_NOTES) {
                 spawnTimer += dt;
                 while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
@@ -431,7 +443,7 @@ int main() {
                     notesSpawned++;
                 }
             }
-
+            
             for (auto& n : notes)
                 n.update(dt);
 
@@ -496,6 +508,7 @@ int main() {
                 FloatRect textBounds = resultText.getLocalBounds();
                 resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
                 resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+                guitar_music.stop();
             } else if (notesSpawned == MAX_NOTES && notes.empty()) {
                 gameOver = true;
                 victory = true;
@@ -503,6 +516,7 @@ int main() {
                 FloatRect textBounds = resultText.getLocalBounds();
                 resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
                 resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+                guitar_music.stop();
             }
 
             if (streak >= 60) {
@@ -519,6 +533,12 @@ int main() {
                 screenFlash = false;
                 flashTimer = 0.f;
             }
+            auto keyEvent = event->getIf<Event::KeyPressed>();
+                    if (keyEvent) {
+                        if (keyEvent->code == Keyboard::Key::Escape){
+                            state = GameState::GameOptions; 
+                        }
+                }
 
                 }else if(state == GameState::Eufemia){
                     float deltaTime = clock.restart().asSeconds();
@@ -579,6 +599,7 @@ int main() {
         window.clear();
 
         if (state == GameState::Menu) {
+            isGuitar = false;
             isGame = false;
             window.draw(panorama);
             window.draw(options_fade);
@@ -597,8 +618,10 @@ int main() {
             for (auto& n : notes)
                 window.draw(n.shape);
             window.draw(scoreText);
-            if (gameOver)
+            if (gameOver){
                 window.draw(resultText);
+                state = GameState::Menu;
+            }
             if (screenFlash)
                 window.draw(flashOverlay);
         }
@@ -688,10 +711,6 @@ int main() {
             }
             window.draw(line);
         }
-        else {
-            // Credits na końcu
-        }
-
         window.display();
     }
 
