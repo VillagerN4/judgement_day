@@ -15,7 +15,7 @@ class Map : public Drawable
     private:
         Texture tileset;
         VertexArray vertexArray;
-
+        
         int mapWidth;
         int mapHeight;
         float tileSize;
@@ -26,6 +26,8 @@ class Map : public Drawable
     public:
 
         Map(Texture tileset, int mapWidth, int mapHeight, float tileSize, float tileDisplaySize);
+        
+        Map(Texture tileset, const char* path, float tileSize, float tileDisplaySize);
 
         Map();
         

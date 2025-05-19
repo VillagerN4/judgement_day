@@ -32,7 +32,7 @@ const float SPAWN_INTERVAL = 0.3f;
 const float NOTE_RADIUS = 20.f;
 const float TARGET_Y = 900.f;
 const float HIT_WINDOW = 50.f;
-const int MAX_NOTES = 750;
+const int MAX_NOTES = 485;
 const int MAX_MISSES = 20;
 
 
@@ -260,7 +260,7 @@ int main() {
 
     //Tu zaczyna się gra
 
-    Map testMap(tileset, 5, 5, 32.f, 6.f);
+    Map testMap(tileset, "source\\map\\level_data\\test_level.bmp", 32.f, 1.f);
 
     Hero player(100.f, WINDOW_SIZE.y - 150.f, 20);
     Boss witch(WINDOW_SIZE.x / 2.f - 30.f, 440.f, Color::Green, 20);
@@ -434,164 +434,164 @@ int main() {
                     }
                 }
             } else if (state == GameState::Guitar){
-                            isGuitar = true;
-            if (!gameOver && notesSpawned < MAX_NOTES) {
-                spawnTimer += dt;
-                while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
-                    spawnTimer -= SPAWN_INTERVAL;
-                    int lane = rand() % NUM_LANES;
-                    notes.emplace_back(lane, -NOTE_RADIUS);
-                    notesSpawned++;
-                }
-            }
+            //                 isGuitar = true;
+            // if (!gameOver && notesSpawned < MAX_NOTES) {
+            //     spawnTimer += dt;
+            //     while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
+            //         spawnTimer -= SPAWN_INTERVAL;
+            //         int lane = rand() % NUM_LANES;
+            //         notes.emplace_back(lane, -NOTE_RADIUS);
+            //         notesSpawned++;
+            //     }
+            // }
             
-            for (auto& n : notes)
-                n.update(dt);
+            // for (auto& n : notes)
+            //     n.update(dt);
 
-            for (int lane = 0; lane < NUM_LANES; ++lane) {
-                if (Keyboard::isKeyPressed(laneKeys[lane])) {
-                    for (auto& note : notes) {
-                        if (note.lane == lane && note.active) {
-                            float yDist = abs(note.shape.getPosition().y - TARGET_Y);
-                            if (yDist <= HIT_WINDOW) {
-                                note.active = false;
-                                score += 100;
-                                streak++;
-                                hitFlashTimers[lane] = HIT_FLASH_DURATION;
-                                scoreFlashTimer = HIT_FLASH_DURATION;
-                                scoreFlashing = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            // for (int lane = 0; lane < NUM_LANES; ++lane) {
+            //     if (Keyboard::isKeyPressed(laneKeys[lane])) {
+            //         for (auto& note : notes) {
+            //             if (note.lane == lane && note.active) {
+            //                 float yDist = abs(note.shape.getPosition().y - TARGET_Y);
+            //                 if (yDist <= HIT_WINDOW) {
+            //                     note.active = false;
+            //                     score += 100;
+            //                     streak++;
+            //                     hitFlashTimers[lane] = HIT_FLASH_DURATION;
+            //                     scoreFlashTimer = HIT_FLASH_DURATION;
+            //                     scoreFlashing = true;
+            //                     break;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
 
-            for (auto& note : notes) {
-                if (note.active && note.shape.getPosition().y > TARGET_Y + HIT_WINDOW) {
-                    note.active = false;
-                    misses++;
-                    streak = 0;
-                    NOTE_SPEED = 550.f;
-                }
-            }
+            // for (auto& note : notes) {
+            //     if (note.active && note.shape.getPosition().y > TARGET_Y + HIT_WINDOW) {
+            //         note.active = false;
+            //         misses++;
+            //         streak = 0;
+            //         NOTE_SPEED = 550.f;
+            //     }
+            // }
 
-            notes.erase(remove_if(notes.begin(), notes.end(), [](Note& n) { return !n.active; }), notes.end());
+            // notes.erase(remove_if(notes.begin(), notes.end(), [](Note& n) { return !n.active; }), notes.end());
 
-            bool anyLaneFlashing = false;
-            for (int i = 0; i < NUM_LANES; ++i) {
-                if (hitFlashTimers[i] > 0) {
-                    hitFlashTimers[i] -= dt;
-                    hitMarkers[i].setFillColor(flashColor);
-                    anyLaneFlashing = true;
-                } else {
-                    hitMarkers[i].setFillColor(normalMarkerColor);
-                }
-            }
+            // bool anyLaneFlashing = false;
+            // for (int i = 0; i < NUM_LANES; ++i) {
+            //     if (hitFlashTimers[i] > 0) {
+            //         hitFlashTimers[i] -= dt;
+            //         hitMarkers[i].setFillColor(flashColor);
+            //         anyLaneFlashing = true;
+            //     } else {
+            //         hitMarkers[i].setFillColor(normalMarkerColor);
+            //     }
+            // }
 
-            targetBar.setFillColor(anyLaneFlashing ? flashColor : normalMarkerColor);
+            // targetBar.setFillColor(anyLaneFlashing ? flashColor : normalMarkerColor);
 
-            if (scoreFlashing) {
-                if (scoreFlashTimer > 0) {
-                    scoreFlashTimer -= dt;
-                    scoreText.setFillColor(flashColor);
-                } else {
-                    scoreFlashing = false;
-                    scoreText.setFillColor(normalMarkerColor);
-                }
-            }
+            // if (scoreFlashing) {
+            //     if (scoreFlashTimer > 0) {
+            //         scoreFlashTimer -= dt;
+            //         scoreText.setFillColor(flashColor);
+            //     } else {
+            //         scoreFlashing = false;
+            //         scoreText.setFillColor(normalMarkerColor);
+            //     }
+            // }
 
-            scoreText.setString("Score: " + to_string(score) + "    Misses: " + to_string(misses) + "/" + to_string(MAX_MISSES) + "    Streak: " + to_string(streak));
+            // scoreText.setString("Score: " + to_string(score) + "    Misses: " + to_string(misses) + "/" + to_string(MAX_MISSES) + "    Streak: " + to_string(streak));
 
-            if (misses >= MAX_MISSES) {
-                gameOver = true;
-                resultText.setString("Game Over");
-                FloatRect textBounds = resultText.getLocalBounds();
-                resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
-                resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
-                guitar_music.stop();
-            } else if (notesSpawned == MAX_NOTES && notes.empty()) {
-                gameOver = true;
-                victory = true;
-                resultText.setString("Boss Defeated!");
-                FloatRect textBounds = resultText.getLocalBounds();
-                resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
-                resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
-                guitar_music.stop();
-            }
+            // if (misses >= MAX_MISSES) {
+            //     gameOver = true;
+            //     resultText.setString("Game Over");
+            //     FloatRect textBounds = resultText.getLocalBounds();
+            //     resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
+            //     resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+            //     guitar_music.stop();
+            // } else if (notesSpawned == MAX_NOTES && notes.empty()) {
+            //     gameOver = true;
+            //     victory = true;
+            //     resultText.setString("Boss Defeated!");
+            //     FloatRect textBounds = resultText.getLocalBounds();
+            //     resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
+            //     resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
+            //     guitar_music.stop();
+            // }
 
-            if (streak >= 60) {
-                flashTimer += dt;
-                if (flashTimer >= 0.2f) {
-                    flashTimer = 0.f;
-                    screenFlash = !screenFlash;
-                }
-            } else if (streak == 20) {
-                NOTE_SPEED = 600.f;
-            } else if (streak == 40) {
-                NOTE_SPEED = 700.f;
-            } else {
-                screenFlash = false;
-                flashTimer = 0.f;
-            }
-            auto keyEvent = event->getIf<Event::KeyPressed>();
-                    if (keyEvent) {
-                        if (keyEvent->code == Keyboard::Key::Escape){
-                            state = GameState::GameOptions; 
-                        }
-                }
+            // if (streak >= 60) {
+            //     flashTimer += dt;
+            //     if (flashTimer >= 0.2f) {
+            //         flashTimer = 0.f;
+            //         screenFlash = !screenFlash;
+            //     }
+            // } else if (streak == 20) {
+            //     NOTE_SPEED = 600.f;
+            // } else if (streak == 40) {
+            //     NOTE_SPEED = 700.f;
+            // } else {
+            //     screenFlash = false;
+            //     flashTimer = 0.f;
+            // }
+            // auto keyEvent = event->getIf<Event::KeyPressed>();
+            //         if (keyEvent) {
+            //             if (keyEvent->code == Keyboard::Key::Escape){
+            //                 state = GameState::GameOptions; 
+            //             }
+            //     }
 
-                }else if(state == GameState::Eufemia){
-                    float deltaTime = clock.restart().asSeconds();
+            //     }else if(state == GameState::Eufemia){
+            //         float deltaTime = clock.restart().asSeconds();
                     
-                    player.handleMovement(deltaTime, 200.f, window.getSize());
-                    player.handleJumping(deltaTime, WINDOW_SIZE.y - 150.f);
+            //         player.handleMovement(deltaTime, 200.f, window.getSize());
+            //         player.handleJumping(deltaTime, WINDOW_SIZE.y - 150.f);
                     
-                    shootTimer += deltaTime;
-                    if (shootTimer >= shootInterval) {
-                        shootTimer = 0.f;
-                        if (leftCrystal.alive) {
-                            Vector2f dir = player.shape.getPosition() - leftCrystal.shape.getPosition();
-                            projectiles.push_back(Projectile(leftCrystal.shape.getPosition().x, leftCrystal.shape.getPosition().y, dir * 400.f));
-                        }
-                        if (rightCrystal.alive) {
-                            Vector2f dir = player.shape.getPosition() - rightCrystal.shape.getPosition();
-                            projectiles.push_back(Projectile(rightCrystal.shape.getPosition().x, rightCrystal.shape.getPosition().y, dir * 400.f));
-                        }
-                    }
+            //         shootTimer += deltaTime;
+            //         if (shootTimer >= shootInterval) {
+            //             shootTimer = 0.f;
+            //             if (leftCrystal.alive) {
+            //                 Vector2f dir = player.shape.getPosition() - leftCrystal.shape.getPosition();
+            //                 projectiles.push_back(Projectile(leftCrystal.shape.getPosition().x, leftCrystal.shape.getPosition().y, dir * 400.f));
+            //             }
+            //             if (rightCrystal.alive) {
+            //                 Vector2f dir = player.shape.getPosition() - rightCrystal.shape.getPosition();
+            //                 projectiles.push_back(Projectile(rightCrystal.shape.getPosition().x, rightCrystal.shape.getPosition().y, dir * 400.f));
+            //             }
+            //         }
 
-                    for (auto& proj : projectiles) {
-                        proj.update(deltaTime);
-                    }
+            //         for (auto& proj : projectiles) {
+            //             proj.update(deltaTime);
+            //         }
 
-                    for (auto i = projectiles.begin(); i != projectiles.end();) {
-                        if (i->shape.getGlobalBounds().findIntersection(player.shape.getGlobalBounds())) {
-                            player.hp -= 1;
-                            playerHit = true;
-                            hitTimer = 0.2f;
-                            i = projectiles.erase(i);
-                        } else {
-                            ++i;
-                        }
-                    }
+            //         for (auto i = projectiles.begin(); i != projectiles.end();) {
+            //             if (i->shape.getGlobalBounds().findIntersection(player.shape.getGlobalBounds())) {
+            //                 player.hp -= 1;
+            //                 playerHit = true;
+            //                 hitTimer = 0.2f;
+            //                 i = projectiles.erase(i);
+            //             } else {
+            //                 ++i;
+            //             }
+            //         }
 
-                    if (!leftCrystal.alive || !rightCrystal.alive) {
-                        witch.shape.setFillColor(Color::Red);
-                        if (!isBossPhaseTwo) {
-                            isBossPhaseTwo = true;
-                        }
-                    }
+            //         if (!leftCrystal.alive || !rightCrystal.alive) {
+            //             witch.shape.setFillColor(Color::Red);
+            //             if (!isBossPhaseTwo) {
+            //                 isBossPhaseTwo = true;
+            //             }
+            //         }
 
-                    if (isBossPhaseTwo) {
-                        witch.phaseTwoAttack(player, projectiles);
-                    }
+            //         if (isBossPhaseTwo) {
+            //             witch.phaseTwoAttack(player, projectiles);
+            //         }
 
-                    if (hitTimer > 0.f) {
-                        hitTimer -= deltaTime;
-                        player.shape.setFillColor(Color::Red);
-                    } else {
-                        player.shape.setFillColor(Color::Blue);
-                    }
+            //         if (hitTimer > 0.f) {
+            //             hitTimer -= deltaTime;
+            //             player.shape.setFillColor(Color::Red);
+            //         } else {
+            //             player.shape.setFillColor(Color::Blue);
+            //         }
                 }
             
     
