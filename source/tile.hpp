@@ -14,8 +14,14 @@ class Tile
         int tilesetY;
         Color loadColor;
         int subtileCount;
+        bool canBeOverlayed;
+        bool canConnect;
+        bool canCollide;
+        int specialTilesetX;
+        int specialTilesetY;
 
-        Tile(int x, int y, Color loadColor, int subtileCount);
+        Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide);
+        Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int specialTilesetX, int specialTilesetY);
 
         Tile();
 };

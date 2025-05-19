@@ -10,7 +10,7 @@
 using namespace sf;
 using namespace std;
 
-class Map : public Drawable
+class Map : public Drawable, public Transformable
 {
     private:
         Texture tileset;
@@ -23,13 +23,19 @@ class Map : public Drawable
 
         void draw(RenderTarget& target, RenderStates states) const;
 
+        void addVertex(int x, int y, int tu, int tv, int offset);
+
     public:
 
-        Map(Texture tileset, int mapWidth, int mapHeight, float tileSize, float tileDisplaySize);
+        // Map(Texture tileset, int mapWidth, int mapHeight, float tileSize, float tileDisplaySize);
         
         Map(Texture tileset, const char* path, float tileSize, float tileDisplaySize);
 
         Map();
+
+        int getTile(int x, int y);
+
+        bool getCollision(int tile);
         
 };
 

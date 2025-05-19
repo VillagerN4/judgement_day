@@ -250,7 +250,7 @@ int main() {
     Text bossSlots[3] = {
         Text(font, "Boss 1", 100),
         Text(font, "Boss 2", 100),
-        Text(font, "testy", 100)
+        Text(font, "Map", 100)
     };
 
     for (int i = 0; i < 3; ++i) {
@@ -260,7 +260,7 @@ int main() {
 
     //Tu zaczyna się gra
 
-    Map testMap(tileset, "source\\map\\level_data\\test_level.bmp", 32.f, 1.f);
+    Map testMap(tileset, "source\\map\\level_data\\test_level.bmp", 32.f, 2.f);
 
     Hero player(100.f, WINDOW_SIZE.y - 150.f, 20);
     Boss witch(WINDOW_SIZE.x / 2.f - 30.f, 440.f, Color::Green, 20);
