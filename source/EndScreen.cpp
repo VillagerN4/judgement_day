@@ -2,7 +2,7 @@
 #include <iostream>
 
 EndScreen::EndScreen(sf::RenderWindow& window) : m_window(window) {
-    if (!m_font.loadFromFile("arial.ttf")) {
+    if (!m_font.loadFromFile("assets/fonts/font1.otf")) {
         std::cerr << "Nie można załadować czcionki!" << std::endl;
     }
     m_message.setFont(m_font);
