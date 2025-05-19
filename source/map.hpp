@@ -27,8 +27,6 @@ class Map : public Drawable
 
         Map(Texture tileset, int mapWidth, int mapHeight, float tileSize, float tileDisplaySize);
 
-        Map(Texture tileset, const char* mapPath, float tileSize, float tileDisplaySize);
-
         Map();
         
 };

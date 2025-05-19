@@ -15,11 +15,12 @@
 #include "crystal.hpp"
 #include "ui.hpp"
 #include "platform.hpp"
+#include "map.hpp"
 
 using namespace sf;
 using namespace std;
 
-enum class GameState { Menu, Settings, Credits, Game, BossSelect, GameOptions, Guitar, Eufemia };
+enum class GameState { Menu, Settings, Credits, Game, BossSelect, GameOptions, Guitar, Eufemia, MapTest, EndScreen };
 
 const float PLAYER_SIZE = 50.f;
 const float MOVE_SPEED = 200.f;
@@ -31,7 +32,7 @@ const float SPAWN_INTERVAL = 0.3f;
 const float NOTE_RADIUS = 20.f;
 const float TARGET_Y = 900.f;
 const float HIT_WINDOW = 50.f;
-const int MAX_NOTES = 1000;
+const int MAX_NOTES = 300;
 const int MAX_MISSES = 20;
 
 
@@ -80,7 +81,10 @@ int main() {
        return -1;
     }
 
-    
+    Texture tileset;
+    if (!tileset.loadFromFile("assets\\textures\\tile\\tileset.png")){
+       cout << "Tileset not found!" << endl;
+    }
     
     vector<Note> notes;
     vector<Text> keyTexts;
@@ -237,18 +241,20 @@ int main() {
 
     int BossSelectedIndex = 0;
 
-    Text bossSlots[2] = {
+    Text bossSlots[3] = {
         Text(font, "Boss 1", 100),
-        Text(font, "Boss 2", 100)
+        Text(font, "Boss 2", 100),
+        Text(font, "Map Test", 100)
     };
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 3; ++i) {
         bossSlots[i].setPosition(Vector2f(100.f, 400.f + i * 150.f));
         bossSlots[i].setFillColor(i == BossSelectedIndex ? Color::Red : Color::White);
     }
 
     //Tu zaczyna się gra
 
+    Map testMap(tileset, 5, 5, 32.f, 6.f);
 
     Hero player(100.f, WINDOW_SIZE.y - 150.f, 20);
     Boss witch(WINDOW_SIZE.x / 2.f - 30.f, 440.f, Color::Green, 20);
@@ -277,9 +283,7 @@ int main() {
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
         window.clear(Color::Black);
-        while (auto event = window.pollEvent()) {
-            if (event->is<Event::Closed>())
-                window.close();
+        auto event = window.pollEvent();
 
             if (state == GameState::Menu) {
                 if (event->is<Event::KeyPressed>()) {
@@ -358,7 +362,7 @@ int main() {
                             BossSelectedIndex--;
                             bossSlots[BossSelectedIndex].setFillColor(Color::Red);
                         }
-                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 1) {
+                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 2) {
                             bossSlots[BossSelectedIndex].setFillColor(Color::White);
                             BossSelectedIndex++;
                             bossSlots[BossSelectedIndex].setFillColor(Color::Red);
@@ -368,6 +372,8 @@ int main() {
                                 state = GameState::Guitar;
                             }else if(BossSelectedIndex == 1){
                                 state = GameState::Eufemia;
+                            }else if(BossSelectedIndex == 2){
+                                state = GameState::MapTest;
                             }
                         }
                         else if (keyEvent->code == Keyboard::Key::Escape) {
@@ -509,6 +515,9 @@ int main() {
                 NOTE_SPEED = 600.f;
             } else if (streak == 40) {
                 NOTE_SPEED = 700.f;
+            } else {
+                screenFlash = false;
+                flashTimer = 0.f;
             }
 
                 }else if(state == GameState::Eufemia){
@@ -563,7 +572,7 @@ int main() {
                         player.shape.setFillColor(Color::Blue);
                     }
                 }
-            }
+            
     
         
 
@@ -609,6 +618,8 @@ int main() {
                 proj.shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
                 window.draw(proj.shape);
             }
+        }else if(state == GameState::MapTest){
+            window.draw(testMap);
         }
         else if (state == GameState::Settings) {
             Vector2f settingsSize(WINDOW_SIZE.x / 2.f, WINDOW_SIZE.y / 2.f);
