@@ -11,15 +11,13 @@ using namespace std;
 
 const int tilesetTileCount = 3;
 
-const int overlayLayers = 4;
-const int connectLayers = 4;
-
-Tile emptyTile(0,1,Color(255,255,255,0),0,false,false,false);
+const int overlayLayers = 8;
+const int connectLayers = 8;
 
 Tile tilesetList[tilesetTileCount] = {
     Tile(0, 0, Color(0,0,0,0), 0, true, false, false),
-    Tile(1, 0, Color(51,118,54,0), 5, false, false, false, 1, 1),
-    Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 5, 1)
+    Tile(1, 0, Color(51,118,54,0), 5, false, false, false, 0, 1),
+    Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 12, 1)
 };
 
 const int overlayTileCount = 1;
@@ -163,24 +161,70 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
 
     int connectOffset = this->mapWidth * this->mapHeight  * 6;
     int overlayOffset = this->mapWidth * this->mapHeight  * 6 * (1 + connectLayers);
-    int neighbourTiles[4];
+    int neighbourTiles[8];
     int currentTile;
+    int detailOffset = 0;
 
     for(int x = 0; x < this->mapWidth; x++){
         for(int y = 0; y < this->mapHeight; y++){
             currentTile = getTile(x, y);
+            detailOffset = 0;
             
             if(tilesetList[currentTile].canBeOverlayed){
                 neighbourTiles[0] = getTile(x - 1, y);
-                neighbourTiles[1] = getTile(x, y - 1);
-                neighbourTiles[2] = getTile(x + 1, y);
+                neighbourTiles[1] = getTile(x + 1, y);
+                neighbourTiles[2] = getTile(x, y - 1);
                 neighbourTiles[3] = getTile(x, y + 1);
-                for(int n = 0; n < 4; n++){
+                neighbourTiles[4] = getTile(x - 1, y + 1);
+                neighbourTiles[5] = getTile(x + 1, y - 1);
+                neighbourTiles[6] = getTile(x - 1, y - 1);
+                neighbourTiles[7] = getTile(x + 1, y + 1);
+
+                for(int n = 0; n < 8; n++){
                     for(int ol = 0; ol < overlayTileCount; ol++){
+                        detailOffset = 0;
                         if(neighbourTiles[n] == overlayTiles[ol]){
-                            tu = tilesetList[overlayTiles[ol]].specialTilesetX + n;
-                            tv = tilesetList[overlayTiles[ol]].specialTilesetY;
-                            addVertex(x, y, tu, tv, overlayOffset + (this->mapWidth * this->mapHeight * 6) * n);
+                            if(n == 4){
+                                if(neighbourTiles[3] == overlayTiles[ol] && neighbourTiles[0] == overlayTiles[ol]){
+                                    detailOffset = 4;
+                                }
+                                if(detailOffset == 0){
+                                    if(neighbourTiles[3] == overlayTiles[ol] || neighbourTiles[0] == overlayTiles[ol])
+                                        detailOffset = -1;
+                                }
+                            }
+                            if(n == 5){
+                                if(neighbourTiles[2] == overlayTiles[ol] && neighbourTiles[1] == overlayTiles[ol]){
+                                    detailOffset = 4;
+                                }
+                                if(detailOffset == 0){
+                                    if(neighbourTiles[2] == overlayTiles[ol] || neighbourTiles[1] == overlayTiles[ol])
+                                        detailOffset = -1;
+                                }
+                            }
+                            if(n == 6){
+                                if(neighbourTiles[0] == overlayTiles[ol] && neighbourTiles[2] == overlayTiles[ol]){
+                                    detailOffset = 4;
+                                }
+                                if(detailOffset == 0){
+                                    if(neighbourTiles[0] == overlayTiles[ol] || neighbourTiles[2] == overlayTiles[ol])
+                                        detailOffset = -1;
+                                }
+                            }
+                            if(n == 7){
+                                if(neighbourTiles[1] == overlayTiles[ol] && neighbourTiles[3] == overlayTiles[ol]){
+                                    detailOffset = 4;
+                                }
+                                if(detailOffset == 0){
+                                    if(neighbourTiles[1] == overlayTiles[ol] || neighbourTiles[3] == overlayTiles[ol])
+                                        detailOffset = -1;
+                                }
+                            }
+                            if(detailOffset >= 0){
+                                tu = tilesetList[overlayTiles[ol]].specialTilesetX + n + detailOffset;
+                                tv = tilesetList[overlayTiles[ol]].specialTilesetY;
+                                addVertex(x, y, tu, tv, overlayOffset + (this->mapWidth * this->mapHeight * 6) * n);
+                            }
                         }
                     }
                 }
@@ -188,14 +232,57 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
 
             if(tilesetList[currentTile].canConnect){
                 neighbourTiles[0] = getTile(x - 1, y);
-                neighbourTiles[1] = getTile(x, y - 1);
-                neighbourTiles[2] = getTile(x + 1, y);
+                neighbourTiles[1] = getTile(x + 1, y);
+                neighbourTiles[2] = getTile(x, y - 1);
                 neighbourTiles[3] = getTile(x, y + 1);
-                for(int n = 0; n < 4; n++){
+                neighbourTiles[4] = getTile(x - 1, y + 1);
+                neighbourTiles[5] = getTile(x + 1, y - 1);
+                neighbourTiles[6] = getTile(x - 1, y - 1);
+                neighbourTiles[7] = getTile(x + 1, y + 1);
+                for(int n = 0; n < 8; n++){
+                    detailOffset = 0;
                     if(neighbourTiles[n] != currentTile){
-                        tu = tilesetList[currentTile].specialTilesetX + n;
-                        tv = tilesetList[currentTile].specialTilesetY;
-                        addVertex(x, y, tu, tv, connectOffset + (this->mapWidth * this->mapHeight * 6) * n);
+                        if(n == 4){
+                            if(neighbourTiles[3] != currentTile && neighbourTiles[0] != currentTile){
+                                detailOffset = 4;
+                            }
+                            if(detailOffset == 0){
+                                if(neighbourTiles[3] != currentTile || neighbourTiles[0] != currentTile)
+                                    detailOffset = -1;
+                            }
+                        }
+                        if(n == 5){
+                            if(neighbourTiles[2] != currentTile && neighbourTiles[1] != currentTile){
+                                detailOffset = 4;
+                            }
+                            if(detailOffset == 0){
+                                if(neighbourTiles[2] != currentTile || neighbourTiles[1] != currentTile)
+                                    detailOffset = -1;
+                            }
+                        }
+                        if(n == 6){
+                            if(neighbourTiles[0] != currentTile && neighbourTiles[2] != currentTile){
+                                detailOffset = 4;
+                            }
+                            if(detailOffset == 0){
+                                if(neighbourTiles[0] != currentTile || neighbourTiles[2] != currentTile)
+                                    detailOffset = -1;
+                            }
+                        }
+                        if(n == 7){
+                            if(neighbourTiles[1] != currentTile && neighbourTiles[3] != currentTile){
+                                detailOffset = 4;
+                            }
+                            if(detailOffset == 0){
+                                if(neighbourTiles[1] != currentTile || neighbourTiles[3] != currentTile)
+                                    detailOffset = -1;
+                            }
+                        }
+                        if(detailOffset >= 0){
+                            tu = tilesetList[currentTile].specialTilesetX + n + detailOffset;
+                            tv = tilesetList[currentTile].specialTilesetY;
+                            addVertex(x, y, tu, tv, connectOffset + (this->mapWidth * this->mapHeight * 6) * n);
+                        }
                     }
                 }
             }
