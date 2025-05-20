@@ -27,6 +27,19 @@ Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed,
     this->specialTilesetY = specialTilesetY;
 }
 
+Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int specialTilesetX, int specialTilesetY, vector<int> connections){
+    this->tilesetX = x;
+    this->tilesetY = y;
+    this->loadColor = loadColor;
+    this->subtileCount = subtileCount;
+    this->canBeOverlayed = canBeOverlayed;
+    this->canConnect = canConnect;
+    this->canCollide = canCollide;
+    this->specialTilesetX = specialTilesetX;
+    this->specialTilesetY = specialTilesetY;
+    this->connections = connections;
+}
+
 Tile::Tile(){
     
 }

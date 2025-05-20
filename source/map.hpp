@@ -20,6 +20,7 @@ class Map : public Drawable, public Transformable
         int mapHeight;
         float tileSize;
         float tileDisplaySize;
+        vector<int> tileList;
 
         void draw(RenderTarget& target, RenderStates states) const;
 

@@ -9,31 +9,34 @@
 using namespace sf;
 using namespace std;
 
-const int tilesetTileCount = 3;
+const int tilesetTileCount = 8;
 
 const int overlayLayers = 8;
 const int connectLayers = 8;
 
 Tile tilesetList[tilesetTileCount] = {
-    Tile(0, 0, Color(0,0,0,0), 0, true, false, false),
+    Tile(0, 0, Color(0,0,0,255), 0, false, false, false),
     Tile(1, 0, Color(51,118,54,0), 5, false, false, false, 0, 1),
-    Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 12, 1)
+    Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 12, 1, {2, 3, 4, 7, -1}),
+    Tile(9, 0, Color(153,84,47,0), 3, false, true, true, 0, 2, {3, 4, 5, 6, -1}),
+    Tile(12, 0, Color(178,109,79,0), 2, false, true, true, 0, 2, {}),
+    Tile(14, 0, Color(62,45,38,0), 4, false, false, true, 0, 0),
+    Tile(18, 0, Color(139,57,32,0), 0, false, false, true, 0, 0),
+    Tile(19, 0, Color(99,90,85,0), 0, false, true, true, 12, 2, {7, -1})
 };
 
 const int overlayTileCount = 1;
 
 int overlayTiles[overlayTileCount] = {1};
 
-int* tileList;
-
 int Map::getTile(int x, int y){
     if(x < 0 || x >= this->mapWidth){
-        return 0;
+        return -1;
     }
     if(y < 0 || y >= this->mapHeight){
-        return 0;
+        return -1;
     }
-    return tileList[x + (y * this->mapWidth)];
+    return this->tileList[x + (y * this->mapWidth)];
 }
 
 bool Map::getCollision(int tile){
@@ -61,6 +64,10 @@ void Map::addVertex(int x, int y, int tu, int tv, int offset){
 }
 
 Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySize){
+    tilesetList[4].connections = tilesetList[3].connections;
+
+    
+
     ifstream level;
     level.open(path, ios::in | ios::binary);
 
@@ -88,8 +95,6 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
     this->mapWidth = informationHeader[4] + (informationHeader[5] << 8) + (informationHeader[6] << 16) + (informationHeader[7] << 24);
     this->mapHeight = informationHeader[8] + (informationHeader[9] << 8) + (informationHeader[10] << 16) + (informationHeader[11] << 24);
 
-    tileList = new int[mapWidth * mapHeight];
-
     const int paddingAmount = ((4 - (this->mapWidth * 3) % 4) % 4);
 
     for(int y = 0; y < this->mapHeight; y++){
@@ -114,7 +119,7 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
             // if(tileIndex < 1)
             // cout << "Tile " << x + y * this->mapWidth << ": " << tileIndex << endl;
 
-            tileList[x + y * this->mapWidth] = tileIndex;
+            this->tileList.push_back(tileIndex);
         }
         level.ignore(paddingAmount);
     }
@@ -124,9 +129,9 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
 
     for(int x = 0; x < this->mapWidth; x++){    
         for(int y = 0; y < this->mapHeight/2; y++){
-            int tmp = tileList[x + (this->mapHeight - y - 1) * this->mapWidth];
-            tileList[x + (this->mapHeight - y - 1) * this->mapWidth] = tileList[x + y * this->mapWidth];
-            tileList[x + y * this->mapWidth] = tmp;
+            int tmp = this->tileList[x + (this->mapHeight - y - 1) * this->mapWidth];
+            this->tileList[x + (this->mapHeight - y - 1) * this->mapWidth] = this->tileList[x + y * this->mapWidth];
+            this->tileList[x + y * this->mapWidth] = tmp;
         }
     }
     
@@ -181,6 +186,7 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
                 neighbourTiles[7] = getTile(x + 1, y + 1);
 
                 for(int n = 0; n < 8; n++){
+                    detailOffset = 0;
                     for(int ol = 0; ol < overlayTileCount; ol++){
                         detailOffset = 0;
                         if(neighbourTiles[n] == overlayTiles[ol]){
@@ -239,8 +245,15 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
                 neighbourTiles[5] = getTile(x + 1, y - 1);
                 neighbourTiles[6] = getTile(x - 1, y - 1);
                 neighbourTiles[7] = getTile(x + 1, y + 1);
+
                 for(int n = 0; n < 8; n++){
                     detailOffset = 0;
+                    for(int c = 0; c < tilesetList[currentTile].connections.size(); c++){
+                        if(neighbourTiles[n] == tilesetList[currentTile].connections[c]){
+                            neighbourTiles[n] = currentTile;
+                            break;
+                        }
+                    }
                     if(neighbourTiles[n] != currentTile){
                         if(n == 4){
                             if(neighbourTiles[3] != currentTile && neighbourTiles[0] != currentTile){
@@ -278,11 +291,15 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
                                     detailOffset = -1;
                             }
                         }
-                        if(detailOffset >= 0){
-                            tu = tilesetList[currentTile].specialTilesetX + n + detailOffset;
-                            tv = tilesetList[currentTile].specialTilesetY;
-                            addVertex(x, y, tu, tv, connectOffset + (this->mapWidth * this->mapHeight * 6) * n);
-                        }
+                    }else{
+                        detailOffset = -1;
+                    }
+
+
+                    if(detailOffset >= 0){
+                        tu = tilesetList[currentTile].specialTilesetX + n + detailOffset;
+                        tv = tilesetList[currentTile].specialTilesetY;
+                        addVertex(x, y, tu, tv, connectOffset + (this->mapWidth * this->mapHeight * 6) * n);
                     }
                 }
             }
