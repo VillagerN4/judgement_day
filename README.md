@@ -1,3 +1,5 @@
+g++ .\source\*.cpp -IC:/SFML/SFML-3.0.0/include -LC:/SFML/SFML-3.0.0/lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -o JudgementDay.exe
+
 # Judgement Day
 **2TP - Adam Stec, Łukasz Stec, Dawid Wolak**
 
