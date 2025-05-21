@@ -717,3 +717,28 @@ int main() {
 
     return 0;
 }
+
+/* Przykład użycia klasy player w main.cpp
+#include <SFML/Graphics.hpp>
+#include "Player.hpp"
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML 3 RPG Player");
+    Player player;
+
+    while (window.isOpen()) {
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>())
+                window.close();
+        }
+
+        player.handleInput();
+
+        window.clear();
+        player.draw(window);
+        window.display();
+    }
+
+    return 0;
+}
+*/
