@@ -15,7 +15,7 @@ Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed,
     this->canCollide = canCollide;
 }
 
-Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int specialTilesetX, int specialTilesetY){
+Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int overlayId){
     this->tilesetX = x;
     this->tilesetY = y;
     this->loadColor = loadColor;
@@ -23,11 +23,12 @@ Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed,
     this->canBeOverlayed = canBeOverlayed;
     this->canConnect = canConnect;
     this->canCollide = canCollide;
-    this->specialTilesetX = specialTilesetX;
-    this->specialTilesetY = specialTilesetY;
+    this->overlayX = overlayX;
+    this->overlayY = overlayY;
+    this->overlayId = overlayId;
 }
 
-Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int specialTilesetX, int specialTilesetY, vector<int> connections){
+Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int connectX, int connectY, vector<int> connections, int overlayId){
     this->tilesetX = x;
     this->tilesetY = y;
     this->loadColor = loadColor;
@@ -35,9 +36,12 @@ Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed,
     this->canBeOverlayed = canBeOverlayed;
     this->canConnect = canConnect;
     this->canCollide = canCollide;
-    this->specialTilesetX = specialTilesetX;
-    this->specialTilesetY = specialTilesetY;
+    this->overlayX = overlayX;
+    this->overlayY = overlayY;
+    this->connectX = connectX;
+    this->connectY = connectY;
     this->connections = connections;
+    this->overlayId = overlayId;
 }
 
 Tile::Tile(){

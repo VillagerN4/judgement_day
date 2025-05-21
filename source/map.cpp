@@ -9,25 +9,33 @@
 using namespace sf;
 using namespace std;
 
-const int tilesetTileCount = 8;
+const int tilesetTileCount = 12;
 
 const int overlayLayers = 8;
 const int connectLayers = 8;
 
+vector<int> pavementConnect = {2, 3, 4, 7, -1};
+vector<int> redBrickConnect = {3, 4, 5, 6, -1};
+vector<int> redBrickRoofConnect = {7, 8, -1};
+
+const int overlayCount = 2;
+
+int overlays[overlayCount][2] = {{0,1},{0,5}};
+
 Tile tilesetList[tilesetTileCount] = {
     Tile(0, 0, Color(0,0,0,255), 0, false, false, false),
-    Tile(1, 0, Color(51,118,54,0), 5, false, false, false, 0, 1),
-    Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 12, 1, {2, 3, 4, 7, -1}),
-    Tile(9, 0, Color(153,84,47,0), 3, false, true, true, 0, 2, {3, 4, 5, 6, -1}),
-    Tile(12, 0, Color(178,109,79,0), 2, false, true, true, 0, 2, {}),
-    Tile(14, 0, Color(62,45,38,0), 4, false, false, true, 0, 0),
-    Tile(18, 0, Color(139,57,32,0), 0, false, false, true, 0, 0),
-    Tile(19, 0, Color(99,90,85,0), 0, false, true, true, 12, 2, {7, -1})
+    Tile(1, 0, Color(51,118,54,0), 5, true, false, false, overlays[0][0], overlays[0][1], 0),
+    Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 0, 0, 12, 1, pavementConnect, -1),
+    Tile(9, 0, Color(153,84,47,0), 3, true, true, true, overlays[1][0], overlays[1][1], 0, 2, redBrickConnect, 1),
+    Tile(12, 0, Color(178,109,79,0), 2, false, true, true, overlays[1][0], overlays[1][1], 0, 2, redBrickConnect, 1),
+    Tile(14, 0, Color(62,45,38,0), 4, false, false, true, overlays[1][0], overlays[1][1], 1),
+    Tile(18, 0, Color(139,57,32,0), 0, false, false, true, overlays[1][0], overlays[1][1], 1),
+    Tile(19, 0, Color(99,90,85,0), 2, false, true, true, overlays[1][0], overlays[1][1], 12, 2, redBrickRoofConnect, 1),
+    Tile(21, 0, Color(141,78,37,0), 2, false, true, true, overlays[1][0], overlays[1][1], 12, 2, redBrickRoofConnect, 1),
+    Tile(0, 3, Color(22,23,26,0), 0, true, true, false, 0, 0, 12, 4, {9, 10, 11, -1}, -1),
+    Tile(1, 3, Color(185,191,211,0), 0, true, true, false, 0, 0, 0, 4, {10, -1}, -1),
+    Tile(2, 3, Color(214,217,224,0), 0, true, true, false, 0, 0, 12, 4, {9, 10, 11, -1}, -1)
 };
-
-const int overlayTileCount = 1;
-
-int overlayTiles[overlayTileCount] = {1};
 
 int Map::getTile(int x, int y){
     if(x < 0 || x >= this->mapWidth){
@@ -64,10 +72,6 @@ void Map::addVertex(int x, int y, int tu, int tv, int offset){
 }
 
 Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySize){
-    tilesetList[4].connections = tilesetList[3].connections;
-
-    
-
     ifstream level;
     level.open(path, ios::in | ios::binary);
 
@@ -139,7 +143,7 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
     this->tileSize = tileSize;
     this->tileDisplaySize = tileDisplaySize;
 
-    vertexArray = VertexArray(PrimitiveType::Triangles, this->mapWidth * this->mapHeight  * 6  * (1 + overlayLayers + connectLayers));
+    vertexArray = VertexArray(PrimitiveType::Triangles, this->mapWidth * this->mapHeight  * 6  * (1 + overlayLayers * overlayCount + connectLayers));
 
     Tile levelTile;
 
@@ -187,49 +191,27 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
 
                 for(int n = 0; n < 8; n++){
                     detailOffset = 0;
-                    for(int ol = 0; ol < overlayTileCount; ol++){
+                    for(int ol = 0; ol < overlayCount; ol++){
                         detailOffset = 0;
-                        if(neighbourTiles[n] == overlayTiles[ol]){
-                            if(n == 4){
-                                if(neighbourTiles[3] == overlayTiles[ol] && neighbourTiles[0] == overlayTiles[ol]){
+                        if(neighbourTiles[n] >= 0 && tilesetList[neighbourTiles[n]].overlayId >= 0 && tilesetList[neighbourTiles[n]].overlayId == ol){     
+                            if(tilesetList[currentTile].overlayId >= 0){
+                                if(tilesetList[currentTile].overlayId >= tilesetList[neighbourTiles[n]].overlayId)
+                                    continue;
+                            }
+                            if(n >= 4){
+                                if(tilesetList[neighbourTiles[n < 6 ? (7 - n) : (n - 6)]].overlayId == ol && tilesetList[neighbourTiles[n - 4]].overlayId == ol){
                                     detailOffset = 4;
                                 }
                                 if(detailOffset == 0){
-                                    if(neighbourTiles[3] == overlayTiles[ol] || neighbourTiles[0] == overlayTiles[ol])
+                                    if(tilesetList[neighbourTiles[n < 6 ? (7 - n) : (n - 6)]].overlayId == ol || tilesetList[neighbourTiles[n - 4]].overlayId == ol)
                                         detailOffset = -1;
                                 }
                             }
-                            if(n == 5){
-                                if(neighbourTiles[2] == overlayTiles[ol] && neighbourTiles[1] == overlayTiles[ol]){
-                                    detailOffset = 4;
-                                }
-                                if(detailOffset == 0){
-                                    if(neighbourTiles[2] == overlayTiles[ol] || neighbourTiles[1] == overlayTiles[ol])
-                                        detailOffset = -1;
-                                }
-                            }
-                            if(n == 6){
-                                if(neighbourTiles[0] == overlayTiles[ol] && neighbourTiles[2] == overlayTiles[ol]){
-                                    detailOffset = 4;
-                                }
-                                if(detailOffset == 0){
-                                    if(neighbourTiles[0] == overlayTiles[ol] || neighbourTiles[2] == overlayTiles[ol])
-                                        detailOffset = -1;
-                                }
-                            }
-                            if(n == 7){
-                                if(neighbourTiles[1] == overlayTiles[ol] && neighbourTiles[3] == overlayTiles[ol]){
-                                    detailOffset = 4;
-                                }
-                                if(detailOffset == 0){
-                                    if(neighbourTiles[1] == overlayTiles[ol] || neighbourTiles[3] == overlayTiles[ol])
-                                        detailOffset = -1;
-                                }
-                            }
+
                             if(detailOffset >= 0){
-                                tu = tilesetList[overlayTiles[ol]].specialTilesetX + n + detailOffset;
-                                tv = tilesetList[overlayTiles[ol]].specialTilesetY;
-                                addVertex(x, y, tu, tv, overlayOffset + (this->mapWidth * this->mapHeight * 6) * n);
+                                tu = overlays[ol][0] + n + detailOffset;
+                                tv = overlays[ol][1];
+                                addVertex(x, y, tu, tv, overlayOffset + (this->mapWidth * this->mapHeight * 6) * (n + overlayLayers * ol));
                             }
                         }
                     }
@@ -255,39 +237,12 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
                         }
                     }
                     if(neighbourTiles[n] != currentTile){
-                        if(n == 4){
-                            if(neighbourTiles[3] != currentTile && neighbourTiles[0] != currentTile){
+                        if(n >= 4){
+                            if(neighbourTiles[n < 6 ? (7 - n) : (n - 6)] != currentTile && neighbourTiles[n - 4] != currentTile){
                                 detailOffset = 4;
                             }
                             if(detailOffset == 0){
-                                if(neighbourTiles[3] != currentTile || neighbourTiles[0] != currentTile)
-                                    detailOffset = -1;
-                            }
-                        }
-                        if(n == 5){
-                            if(neighbourTiles[2] != currentTile && neighbourTiles[1] != currentTile){
-                                detailOffset = 4;
-                            }
-                            if(detailOffset == 0){
-                                if(neighbourTiles[2] != currentTile || neighbourTiles[1] != currentTile)
-                                    detailOffset = -1;
-                            }
-                        }
-                        if(n == 6){
-                            if(neighbourTiles[0] != currentTile && neighbourTiles[2] != currentTile){
-                                detailOffset = 4;
-                            }
-                            if(detailOffset == 0){
-                                if(neighbourTiles[0] != currentTile || neighbourTiles[2] != currentTile)
-                                    detailOffset = -1;
-                            }
-                        }
-                        if(n == 7){
-                            if(neighbourTiles[1] != currentTile && neighbourTiles[3] != currentTile){
-                                detailOffset = 4;
-                            }
-                            if(detailOffset == 0){
-                                if(neighbourTiles[1] != currentTile || neighbourTiles[3] != currentTile)
+                                if(neighbourTiles[n < 6 ? (7 - n) : (n - 6)] != currentTile || neighbourTiles[n - 4] != currentTile)
                                     detailOffset = -1;
                             }
                         }
@@ -297,8 +252,8 @@ Map::Map(Texture tileset, const char* path, float tileSize, float tileDisplaySiz
 
 
                     if(detailOffset >= 0){
-                        tu = tilesetList[currentTile].specialTilesetX + n + detailOffset;
-                        tv = tilesetList[currentTile].specialTilesetY;
+                        tu = tilesetList[currentTile].connectX + n + detailOffset;
+                        tv = tilesetList[currentTile].connectY;
                         addVertex(x, y, tu, tv, connectOffset + (this->mapWidth * this->mapHeight * 6) * n);
                     }
                 }

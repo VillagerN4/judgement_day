@@ -17,13 +17,16 @@ class Tile
         bool canBeOverlayed;
         bool canConnect;
         bool canCollide;
-        int specialTilesetX;
-        int specialTilesetY;
+        int overlayX;
+        int overlayY;
+        int connectX;
+        int connectY;
         vector<int> connections;
+        int overlayId;
 
         Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide);
-        Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int specialTilesetX, int specialTilesetY);
-        Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int specialTilesetX, int specialTilesetY, vector<int> connections);
+        Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int overlayId);
+        Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int connectX, int connectY, vector<int> connections, int overlayId);
 
         Tile();
 };
