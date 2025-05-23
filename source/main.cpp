@@ -16,6 +16,7 @@
 #include "ui.hpp"
 #include "platform.hpp"
 #include "map.hpp"
+#include "worldmap.hpp"
 
 using namespace sf;
 using namespace std;
@@ -643,7 +644,7 @@ int main() {
                 window.draw(proj.shape);
             }
         }else if(state == GameState::MapTest){
-            window.draw(testMap);
+            // displayWorld(window, testMap);
         }
         else if (state == GameState::Settings) {
             Vector2f settingsSize(WINDOW_SIZE.x / 2.f, WINDOW_SIZE.y / 2.f);
