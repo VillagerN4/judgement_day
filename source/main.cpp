@@ -81,11 +81,6 @@ int main() {
        cout << "Horse not found!" << endl;
        return -1;
     }
-
-    Texture tileset;
-    if (!tileset.loadFromFile("assets\\textures\\tile\\tileset.png")){
-       cout << "Tileset not found!" << endl;
-    }
     
     vector<Note> notes;
     vector<Text> keyTexts;
@@ -109,8 +104,6 @@ int main() {
         {4, "K"},
         {5, "L"}
     };
-
-
 
     Font font;
     if (!font.openFromFile("assets\\fonts\\font1.otf")) {
@@ -213,7 +206,7 @@ int main() {
     if (music.openFromFile("assets\\sounds\\music\\RightBehindYou.wav")) {
         music.setLooping(true);
         music.setVolume(musicVolume);
-        music.play();
+        // music.play();
     } else {
         cout << "Music not available!" << endl;
     }
@@ -261,8 +254,6 @@ int main() {
 
     //Tu zaczyna się gra
 
-    Map testMap(tileset, "source\\map\\level_data\\test_level.bmp", 32.f, 2.f);
-
     Hero player(100.f, WINDOW_SIZE.y - 150.f, 20);
     Boss witch(WINDOW_SIZE.x / 2.f - 30.f, 440.f, Color::Green, 20);
     witch.shape.setSize({60.f, 100.f});
@@ -287,432 +278,25 @@ int main() {
     string mainObjective = "";
     Clock clock;
 
+    loadMap("source\\map\\level_data\\test_level.bmp");
+
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
-        window.clear(Color::Black);
-        auto event = window.pollEvent();
 
-            if (state == GameState::Menu) {
-                if (event->is<Event::KeyPressed>()) {
-                    auto keyEvent = event->getIf<Event::KeyPressed>();
-                    if (keyEvent) {
-                        if (keyEvent->code == Keyboard::Key::W && selectedIndex > 0) {
-                            menuItems[selectedIndex].setFillColor(Color::White);
-                            selectedIndex--;
-                            menuItems[selectedIndex].setFillColor(Color::Red);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::S && selectedIndex < 2) {
-                            menuItems[selectedIndex].setFillColor(Color::White);
-                            selectedIndex++;
-                            menuItems[selectedIndex].setFillColor(Color::Red);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::Enter) {
-                            if (selectedIndex == 0) {
-                                state = GameState::BossSelect;
-                            }
-                            else if (selectedIndex == 1) {
-                                state = GameState::Settings;
-                            }
-                            else {
-                                window.close();
-                            }
-                        }
-                    }
-                }
-            }
-            else if (state == GameState::Settings) {
-                    if (event->is<Event::KeyPressed>()) {
-                        auto keyEvent = event->getIf<Event::KeyPressed>();
-                        if (keyEvent) {
-                            if (keyEvent->code == Keyboard::Key::W && selectedSettingsIndex > 0) {
-                                settingsItems[selectedSettingsIndex].setFillColor(Color::White);
-                                selectedSettingsIndex--;
-                                settingsItems[selectedSettingsIndex].setFillColor(Color::Red);
-                            }
-                            else if (keyEvent->code == Keyboard::Key::S && selectedSettingsIndex < 2) {
-                                settingsItems[selectedSettingsIndex].setFillColor(Color::White);
-                                selectedSettingsIndex++;
-                                settingsItems[selectedSettingsIndex].setFillColor(Color::Red);
-                            }
-                            else if (keyEvent->code == Keyboard::Key::A && selectedSettingsIndex == 0) {
-                                musicVolume = max(0.f, musicVolume - 5.f);
-                                music.setVolume(musicVolume);
-                            }
-                            else if (keyEvent->code == Keyboard::Key::D && selectedSettingsIndex == 0) {
-                                musicVolume = min(100.f, musicVolume + 5.f);
-                                music.setVolume(musicVolume);
-                            }
-                            else if (keyEvent->code == Keyboard::Key::Enter && selectedSettingsIndex == 1) {
-                            isFullscreen = !isFullscreen;
-                            window.create(
-                                isFullscreen ? VideoMode::getDesktopMode() : VideoMode(WINDOW_SIZE),
-                                "Judgement Day",
-                                isFullscreen ? State::Fullscreen : State::Windowed
-                            );
-                            window.setFramerateLimit(60);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::Escape) {
-                            state = isGame ? GameState::GameOptions : GameState::Menu;
-                        }
-                    }
-                }
-            }
-            else if (state == GameState::BossSelect) {
-                if (event->is<Event::KeyPressed>()) {
-                    auto keyEvent = event->getIf<Event::KeyPressed>();
-                    if (keyEvent) {
-                        if (keyEvent->code == Keyboard::Key::W && BossSelectedIndex > 0) {
-                            bossSlots[BossSelectedIndex].setFillColor(Color::White);
-                            BossSelectedIndex--;
-                            bossSlots[BossSelectedIndex].setFillColor(Color::Red);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::S && BossSelectedIndex < 2) {
-                            bossSlots[BossSelectedIndex].setFillColor(Color::White);
-                            BossSelectedIndex++;
-                            bossSlots[BossSelectedIndex].setFillColor(Color::Red);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::Enter) {
-                            if(BossSelectedIndex == 0){
-                                music.stop();
-                                guitar_music.play();
-                                gameOver = false;
-                                misses = 0;
-                                state = GameState::Guitar;
-                            }else if(BossSelectedIndex == 1){
-                                music.stop();
-                                state = GameState::Eufemia;
-                            }else if(BossSelectedIndex == 2){
-                                music.stop();
-                                state = GameState::MapTest;
-                            }
-                        }
-                        else if (keyEvent->code == Keyboard::Key::Escape) {
-                            state = GameState::Menu;
-                        }
-                    }
-                }
-            }
-            else if (state == GameState::Game){
-                auto keyEvent = event->getIf<Event::KeyPressed>();
-                    if (keyEvent) {
-                        if (keyEvent->code == Keyboard::Key::Escape){
-                            state = GameState::GameOptions; 
-                        }
-                }
-            }
-            else if (state == GameState::GameOptions){
-                if (event->is<Event::KeyPressed>()) {
-                    auto keyEvent = event->getIf<Event::KeyPressed>();
-                    if (keyEvent) {
-                        if (keyEvent->code == Keyboard::Key::W && gameOptionsSelectedIdex > 0) {
-                            gameOptions[gameOptionsSelectedIdex].setFillColor(Color::White);
-                            gameOptionsSelectedIdex--;
-                            gameOptions[gameOptionsSelectedIdex].setFillColor(Color::Red);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::S && gameOptionsSelectedIdex < 2) {
-                            gameOptions[gameOptionsSelectedIdex].setFillColor(Color::White);
-                            gameOptionsSelectedIdex++;
-                            gameOptions[gameOptionsSelectedIdex].setFillColor(Color::Red);
-                        }
-                        else if (keyEvent->code == Keyboard::Key::Enter) {
-                            if (gameOptionsSelectedIdex == 0) {
-                                if (isGuitar == true){
-                                    state = GameState::Guitar;
-                                }
-                            }
-                        else if (gameOptionsSelectedIdex == 1){
-                                
-                                state = GameState::Settings;
-                            }
-                            else if (gameOptionsSelectedIdex == 2){
-                                music.play();
-                                state = GameState::Menu;
-                            }
-                        }
-                        else if (keyEvent->code == Keyboard::Key::Escape) {
-                            state = GameState::Game;
-                        }
-                    }
-                }
-            } else if (state == GameState::Guitar){
-            //                 isGuitar = true;
-            // if (!gameOver && notesSpawned < MAX_NOTES) {
-            //     spawnTimer += dt;
-            //     while (spawnTimer >= SPAWN_INTERVAL && notesSpawned < MAX_NOTES) {
-            //         spawnTimer -= SPAWN_INTERVAL;
-            //         int lane = rand() % NUM_LANES;
-            //         notes.emplace_back(lane, -NOTE_RADIUS);
-            //         notesSpawned++;
-            //     }
-            // }
-            
-            // for (auto& n : notes)
-            //     n.update(dt);
+        while(const std::optional event = window.pollEvent()){
+            if(event->is<Event::Closed>())
+                window.close();
+        }
 
-            // for (int lane = 0; lane < NUM_LANES; ++lane) {
-            //     if (Keyboard::isKeyPressed(laneKeys[lane])) {
-            //         for (auto& note : notes) {
-            //             if (note.lane == lane && note.active) {
-            //                 float yDist = abs(note.shape.getPosition().y - TARGET_Y);
-            //                 if (yDist <= HIT_WINDOW) {
-            //                     note.active = false;
-            //                     score += 100;
-            //                     streak++;
-            //                     hitFlashTimers[lane] = HIT_FLASH_DURATION;
-            //                     scoreFlashTimer = HIT_FLASH_DURATION;
-            //                     scoreFlashing = true;
-            //                     break;
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // for (auto& note : notes) {
-            //     if (note.active && note.shape.getPosition().y > TARGET_Y + HIT_WINDOW) {
-            //         note.active = false;
-            //         misses++;
-            //         streak = 0;
-            //         NOTE_SPEED = 550.f;
-            //     }
-            // }
-
-            // notes.erase(remove_if(notes.begin(), notes.end(), [](Note& n) { return !n.active; }), notes.end());
-
-            // bool anyLaneFlashing = false;
-            // for (int i = 0; i < NUM_LANES; ++i) {
-            //     if (hitFlashTimers[i] > 0) {
-            //         hitFlashTimers[i] -= dt;
-            //         hitMarkers[i].setFillColor(flashColor);
-            //         anyLaneFlashing = true;
-            //     } else {
-            //         hitMarkers[i].setFillColor(normalMarkerColor);
-            //     }
-            // }
-
-            // targetBar.setFillColor(anyLaneFlashing ? flashColor : normalMarkerColor);
-
-            // if (scoreFlashing) {
-            //     if (scoreFlashTimer > 0) {
-            //         scoreFlashTimer -= dt;
-            //         scoreText.setFillColor(flashColor);
-            //     } else {
-            //         scoreFlashing = false;
-            //         scoreText.setFillColor(normalMarkerColor);
-            //     }
-            // }
-
-            // scoreText.setString("Score: " + to_string(score) + "    Misses: " + to_string(misses) + "/" + to_string(MAX_MISSES) + "    Streak: " + to_string(streak));
-
-            // if (misses >= MAX_MISSES) {
-            //     gameOver = true;
-            //     resultText.setString("Game Over");
-            //     FloatRect textBounds = resultText.getLocalBounds();
-            //     resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
-            //     resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
-            //     guitar_music.stop();
-            // } else if (notesSpawned == MAX_NOTES && notes.empty()) {
-            //     gameOver = true;
-            //     victory = true;
-            //     resultText.setString("Boss Defeated!");
-            //     FloatRect textBounds = resultText.getLocalBounds();
-            //     resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
-            //     resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
-            //     guitar_music.stop();
-            // }
-
-            // if (streak >= 60) {
-            //     flashTimer += dt;
-            //     if (flashTimer >= 0.2f) {
-            //         flashTimer = 0.f;
-            //         screenFlash = !screenFlash;
-            //     }
-            // } else if (streak == 20) {
-            //     NOTE_SPEED = 600.f;
-            // } else if (streak == 40) {
-            //     NOTE_SPEED = 700.f;
-            // } else {
-            //     screenFlash = false;
-            //     flashTimer = 0.f;
-            // }
-            // auto keyEvent = event->getIf<Event::KeyPressed>();
-            //         if (keyEvent) {
-            //             if (keyEvent->code == Keyboard::Key::Escape){
-            //                 state = GameState::GameOptions; 
-            //             }
-            //     }
-
-            //     }else if(state == GameState::Eufemia){
-            //         float deltaTime = clock.restart().asSeconds();
-                    
-            //         player.handleMovement(deltaTime, 200.f, window.getSize());
-            //         player.handleJumping(deltaTime, WINDOW_SIZE.y - 150.f);
-                    
-            //         shootTimer += deltaTime;
-            //         if (shootTimer >= shootInterval) {
-            //             shootTimer = 0.f;
-            //             if (leftCrystal.alive) {
-            //                 Vector2f dir = player.shape.getPosition() - leftCrystal.shape.getPosition();
-            //                 projectiles.push_back(Projectile(leftCrystal.shape.getPosition().x, leftCrystal.shape.getPosition().y, dir * 400.f));
-            //             }
-            //             if (rightCrystal.alive) {
-            //                 Vector2f dir = player.shape.getPosition() - rightCrystal.shape.getPosition();
-            //                 projectiles.push_back(Projectile(rightCrystal.shape.getPosition().x, rightCrystal.shape.getPosition().y, dir * 400.f));
-            //             }
-            //         }
-
-            //         for (auto& proj : projectiles) {
-            //             proj.update(deltaTime);
-            //         }
-
-            //         for (auto i = projectiles.begin(); i != projectiles.end();) {
-            //             if (i->shape.getGlobalBounds().findIntersection(player.shape.getGlobalBounds())) {
-            //                 player.hp -= 1;
-            //                 playerHit = true;
-            //                 hitTimer = 0.2f;
-            //                 i = projectiles.erase(i);
-            //             } else {
-            //                 ++i;
-            //             }
-            //         }
-
-            //         if (!leftCrystal.alive || !rightCrystal.alive) {
-            //             witch.shape.setFillColor(Color::Red);
-            //             if (!isBossPhaseTwo) {
-            //                 isBossPhaseTwo = true;
-            //             }
-            //         }
-
-            //         if (isBossPhaseTwo) {
-            //             witch.phaseTwoAttack(player, projectiles);
-            //         }
-
-            //         if (hitTimer > 0.f) {
-            //             hitTimer -= deltaTime;
-            //             player.shape.setFillColor(Color::Red);
-            //         } else {
-            //             player.shape.setFillColor(Color::Blue);
-            //         }
-                }
-            
-    
+        if(Keyboard::isKeyPressed(Keyboard::Scan::Escape))
+            window.close();
         
+        worldTick(dt);
 
         window.clear();
 
-        if (state == GameState::Menu) {
-            isGuitar = false;
-            isGame = false;
-            window.draw(panorama);
-            window.draw(options_fade);
-            window.draw(title);
-            for (const auto& item : menuItems)
-                window.draw(item);
-        }
-        else if (state == GameState::Guitar) {
-            isGame = true;
-            window.clear(Color::Black);
-            window.draw(targetBar);
-            for (auto& hitMarker : hitMarkers)
-                window.draw(hitMarker);
-            for (auto& keyText : keyTexts)
-                window.draw(keyText);
-            for (auto& n : notes)
-                window.draw(n.shape);
-            window.draw(scoreText);
-            if (gameOver){
-                window.draw(resultText);
-                state = GameState::Menu;
-            }
-            if (screenFlash)
-                window.draw(flashOverlay);
-        }
-        else if (state == GameState::Eufemia) {
+        displayWorld(window, WINDOW_SIZE);
 
-
-            hpBar.update(player.hp, witch.hp);
-
-            window.draw(platform.shape);
-            window.draw(witch.shape);
-            window.draw(hpBar.hpBarBack);
-            window.draw(hpBar.hpBar);
-            if (leftCrystal.alive) window.draw(leftCrystal.shape);
-            if (rightCrystal.alive) window.draw(rightCrystal.shape);
-            
-            for (auto& proj : projectiles) {
-                proj.shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
-                window.draw(proj.shape);
-            }
-        }else if(state == GameState::MapTest){
-            // displayWorld(window, testMap);
-        }
-        else if (state == GameState::Settings) {
-            Vector2f settingsSize(WINDOW_SIZE.x / 2.f, WINDOW_SIZE.y / 2.f);
-            Vector2f settingsPos(WINDOW_SIZE.x / 4.f, WINDOW_SIZE.y / 4.f);
-            RectangleShape settingsBox(settingsSize);
-            settingsBox.setPosition(settingsPos);
-            settingsBox.setFillColor(Color::Black);
-            settingsBox.setOutlineColor(Color::Red);
-            settingsBox.setOutlineThickness(5.f);
-        
-            window.draw(settingsBox);
-        
-            for (int i = 0; i < 2; ++i) {
-                settingsItems[i].setPosition(Vector2f(settingsPos.x + 50.f, settingsPos.y + 50.f + i * 100.f));
-                settingsItems[i].setFillColor(i == selectedSettingsIndex ? Color::Red : Color::White);
-                window.draw(settingsItems[i]);
-            }
-
-            RectangleShape barBack(Vector2f(300.f, 30.f));
-            barBack.setPosition(Vector2f(settingsPos.x + 350.f, settingsPos.y + 75.f));
-            barBack.setFillColor(Color::White);
-        
-            RectangleShape barFill(Vector2f(3.f * musicVolume, 30.f));
-            barFill.setPosition(Vector2f(settingsPos.x + 350.f, settingsPos.y + 75.f));
-            barFill.setFillColor(Color::Red);
-        
-            window.draw(barBack);
-            window.draw(barFill);
-        
-            Text modeText(font, isFullscreen ? "Fullscreen" : "Windowed", 60);
-            modeText.setPosition(Vector2f(settingsPos.x + 550.f, settingsPos.y + 150.f));
-            window.draw(modeText);
-        }
-        else if (state == GameState::BossSelect) {
-            Text saveTitle(font, "Select Boss", 108);
-            saveTitle.setPosition(Vector2f(100.f, 200.f));
-            saveTitle.setFillColor(Color::Red);
-            window.draw(saveTitle);
-
-            for (const auto& slot : bossSlots)
-                window.draw(slot);
-        }
-        else if (state == GameState::GameOptions) {
-            Vector2f settingsSize(WINDOW_SIZE.x / 2.f, WINDOW_SIZE.y / 2.f);
-            Vector2f settingsPos(WINDOW_SIZE.x / 4.f, WINDOW_SIZE.y / 4.f);
-            RectangleShape settingsBox(settingsSize);
-            settingsBox.setPosition(settingsPos);
-            settingsBox.setFillColor(Color::Black);
-            settingsBox.setOutlineColor(Color::Red);
-            settingsBox.setOutlineThickness(5.f);
-            RectangleShape line(Vector2f(settingsSize.x - 60.f, 3.f));
-            line.setPosition(Vector2f(settingsPos.x + 30.f, settingsPos.y + 55.f + 3 * 100.f));
-            line.setFillColor(Color::Red);
-
-            window.draw(settingsBox);
-
-            for (int i = 0; i < 4; ++i) {
-                gameOptions[i].setPosition(Vector2f(settingsPos.x + 50.f, settingsPos.y + 50.f + i * 100.f));
-                if (i != 3){
-                    gameOptions[i].setFillColor(i == gameOptionsSelectedIdex ? Color::Red : Color::White);
-                }
-                else {
-                    gameOptions[i].setFillColor(Color::Red);
-                }
-                window.draw(gameOptions[i]);
-            }
-            window.draw(line);
-        }
         window.display();
     }
 

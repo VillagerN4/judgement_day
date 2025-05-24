@@ -8,6 +8,10 @@
 using namespace sf;
 using namespace std;
 
-void worldTick();
+void loadMap(const char* path);
+
+void worldTick(float deltaTime);
+
+void displayWorld(RenderWindow& window, Vector2u window_size);
 
 #endif
