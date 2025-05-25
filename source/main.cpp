@@ -345,3 +345,53 @@ int main() {
     return 0;
 }
 */
+/* Przykład użycia klasy npc w main.cpp
+#include <SFML/Graphics.hpp>
+#include "npc.hpp"
+#include <variant>
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode({800u, 600u}), "NPC Trigger - SFML 3.0.0");
+    window.setFramerateLimit(60);
+
+    sf::RectangleShape player(sf::Vector2f(40, 40));
+    player.setFillColor(sf::Color::Blue);
+    player.setPosition({100.f, 100.f});
+
+    NPC npc({300.f, 300.f}, {50.f, 50.f});
+
+    sf::Clock clock;
+
+    while (window.isOpen()) {
+        // Obsługa zdarzeń
+        while (auto eventOpt = window.pollEvent()) {
+            const sf::Event& event = *eventOpt;
+
+            // Sprawdzenie czy event to zamknięcie okna
+            if (std::get_if<sf::Event::Closed>(&event)) {
+                window.close();
+            }
+        }
+
+        // Poruszanie graczem
+        float dt = clock.restart().asSeconds();
+        sf::Vector2f movement(0.f, 0.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W)) movement.y -= 200 * dt;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::S)) movement.y += 200 * dt;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::A)) movement.x -= 200 * dt;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::D)) movement.x += 200 * dt;
+        player.move(movement);
+
+        // Sprawdzenie kolizji z NPC
+        npc.checkCollision(player);
+
+        // Renderowanie
+        window.clear();
+        window.draw(player);
+        npc.draw(window);
+        window.display();
+    }
+
+    return 0;
+}
+*/

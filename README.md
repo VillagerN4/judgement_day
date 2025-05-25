@@ -1,3 +1,5 @@
+Link do strony dokumentacji: https://villagern4.github.io/judgement_day/
+
 g++ .\source\*.cpp -IC:/SFML/SFML-3.0.0/include -LC:/SFML/SFML-3.0.0/lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -o JudgementDay.exe
 
 # Judgement Day
