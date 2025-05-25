@@ -47,4 +47,10 @@
                 <li><strong>Update</strong> – Aktualizacja pasku życia </li>
             </ul>
 </section>
-
+<section id="PLATFORM">
+            <h2>Platforma</h2>
+            <p>Zawiera tworzenie platformu n aktórej stoi gracz </p>
+            <ul>
+                <li><strong>Platform</strong> – tworzy platformę </li>
+            </ul>
+</section>
