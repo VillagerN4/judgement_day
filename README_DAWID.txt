@@ -12,3 +12,12 @@
                 <li><strong>takeDamage</strong> – dostawanie obrażeń gracza</li>
             </ul>
 </section>
+<section id="BOSSES">
+            <h2>Klasa Eufemi</h2>
+            <p>Zawiera tworzenie Bossa</p>
+            <ul>
+                <li><strong>Konstruktor Boss</strong> – tworzy obiekt Bossa i ustawia teksturę i życie</li>
+                <li><strong>getHP,takeDamage i isAlive </strong> – sprawdza życie bossa i zadaje mu obrażenia </li>
+                <li><strong>phaseTwoAttack</strong> – Druga faza bossa polega na strzelaniu pociskami które lecą w stronę gracza </li>
+            </ul>
+</section>
