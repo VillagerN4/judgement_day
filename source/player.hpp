@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "map.hpp"
 
 using namespace sf;
@@ -10,8 +11,10 @@ public:
     Player();
     Player(float startX, float startY, Map worldMap);
     void tickPlayer(float deltaTime);
-    void draw(RenderWindow& window, float displaySize, float cameraX, float cameraY);
+    void draw(RenderWindow& window, float displaySize, float cameraX, float cameraY, float tileSize, float deltaTime);
 
+    bool checkCollision();
+    
     float getX();
     float getY();
 
@@ -19,8 +22,19 @@ public:
     void moveY(float amount);
 
 private:
+    enum class action { idle, walk };
+
+    action state;
+    int facing;
+
+    int frameTimer;
+    bool canFootstep;
+
     float acc;
     float res;
+
+    float collisionBoxWidth;
+    float collisionBoxHeight;
 
     float x;
     float y;
@@ -30,5 +44,6 @@ private:
 
     Map worldMap;
 
-    RectangleShape shape;
+    RectangleShape playerSprite;
+    RectangleShape shadowSprite;
 };

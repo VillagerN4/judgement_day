@@ -2,6 +2,7 @@
 #define WORLDMAP_H
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include "map.hpp"
 
@@ -12,6 +13,6 @@ void loadMap(const char* path);
 
 void worldTick(float deltaTime);
 
-void displayWorld(RenderWindow& window, Vector2u window_size);
+void displayWorld(RenderWindow& window, Vector2u window_size, float deltaTime);
 
 #endif

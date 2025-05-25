@@ -1,5 +1,6 @@
 #include "worldmap.hpp"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include "map.hpp"
 #include "player.hpp"
@@ -28,14 +29,14 @@ void loadMap(const char* path){
 
     world = Map(tileset, path, tileSize, worldDisplaySize);
 
-    player = Player(0.5f, 10.5f, world);
+    player = Player(0.5f, 10.f, world);
 }
 
 void worldTick(float deltaTime){
     player.tickPlayer(deltaTime);
 }
 
-void displayWorld(RenderWindow& window, Vector2u window_size){
+void displayWorld(RenderWindow& window, Vector2u window_size, float deltaTime){
         cameraX = player.getX() * displaySize - window_size.x/2;
         cameraY = player.getY() * displaySize - window_size.y/2;
 
@@ -53,5 +54,5 @@ void displayWorld(RenderWindow& window, Vector2u window_size){
 
         world.setPosition(Vector2f(-cameraX, -cameraY));
         window.draw(world);
-        player.draw(window, displaySize, cameraX, cameraY);
+        player.draw(window, displaySize, cameraX, cameraY, tileSize, deltaTime);
 }

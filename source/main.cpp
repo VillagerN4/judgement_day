@@ -211,6 +211,24 @@ int main() {
         cout << "Music not available!" << endl;
     }
 
+    Music musicWorld;
+    if (musicWorld.openFromFile("assets\\sounds\\music\\ThreeItems.wav")) {
+        musicWorld.setLooping(true);
+        musicWorld.setVolume(musicVolume);
+        musicWorld.play();
+    } else {
+        cout << "Music not available!" << endl;
+    }
+
+    Music rain;
+    if (rain.openFromFile("assets\\sounds\\ambient\\rain.wav")) {
+        rain.setLooping(true);
+        rain.setVolume(75.f);
+        rain.play();
+    } else {
+        cout << "Music not available!" << endl;
+    }
+
     Music guitar_music;
     if (guitar_music.openFromFile("assets\\sounds\\music\\MEDIC.wav")) {
         guitar_music.setVolume(musicVolume);
@@ -295,7 +313,7 @@ int main() {
 
         window.clear();
 
-        displayWorld(window, WINDOW_SIZE);
+        displayWorld(window, WINDOW_SIZE, dt);
 
         window.display();
     }

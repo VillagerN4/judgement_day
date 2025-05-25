@@ -1,24 +1,27 @@
 #include "tile.hpp"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 
 using namespace sf;
 using namespace std;
 
-Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide){
+Tile::Tile(int x, int y, Color loadColor, int soundGroup, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide){
     this->tilesetX = x;
     this->tilesetY = y;
     this->loadColor = loadColor;
+    this->soundGroup = soundGroup;
     this->subtileCount = subtileCount;
     this->canBeOverlayed = canBeOverlayed;
     this->canConnect = canConnect;
     this->canCollide = canCollide;
 }
 
-Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int overlayId){
+Tile::Tile(int x, int y, Color loadColor, int soundGroup, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int overlayId){
     this->tilesetX = x;
     this->tilesetY = y;
     this->loadColor = loadColor;
+    this->soundGroup = soundGroup;
     this->subtileCount = subtileCount;
     this->canBeOverlayed = canBeOverlayed;
     this->canConnect = canConnect;
@@ -28,10 +31,11 @@ Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed,
     this->overlayId = overlayId;
 }
 
-Tile::Tile(int x, int y, Color loadColor, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int connectX, int connectY, vector<int> connections, int overlayId){
+Tile::Tile(int x, int y, Color loadColor, int soundGroup, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int connectX, int connectY, vector<int> connections, int overlayId){
     this->tilesetX = x;
     this->tilesetY = y;
     this->loadColor = loadColor;
+    this->soundGroup = soundGroup;
     this->subtileCount = subtileCount;
     this->canBeOverlayed = canBeOverlayed;
     this->canConnect = canConnect;
