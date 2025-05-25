@@ -39,4 +39,12 @@
                 <li><strong>Update i draw</strong> – Aktualizacja pozycji pocisku i rysowanie go </li>
             </ul>
 </section>
+<section id="UI">
+            <h2>Hpbars</h2>
+            <p>Zawiera tworzenie pasków życia </p>
+            <ul>
+                <li><strong>UI</strong> – tworzy paski życia dla gracza,kryształów i bossa </li>
+                <li><strong>Update</strong> – Aktualizacja pasku życia </li>
+            </ul>
+</section>
 
