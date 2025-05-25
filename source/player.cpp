@@ -30,7 +30,15 @@ int keyX = 0;
 int keyY = 0;
 
 Player::Player(){
-
+    this->frameTimer = 0;
+    this->walkFrame = 0;
+    this->velocityX = 0;
+    this->velocityY = 0;
+    this->facing = 0;
+    this->acc = 0.8f;
+    this->res = 10.f;
+    this->collisionBoxWidth = 0.5f;
+    this->collisionBoxHeight = 0.2f;
 }
 
 Player::Player(float startX, float startY, Map worldMap) {
@@ -40,6 +48,11 @@ Player::Player(float startX, float startY, Map worldMap) {
     if (!shadow.loadFromFile("assets\\textures\\entity\\shadow.png")){
         cout << "Shadow not found!" << endl;
     }
+    this->frameTimer = 0;
+    this->walkFrame = 0;
+    this->velocityX = 0;
+    this->velocityY = 0;
+    this->facing = 0;
     this->worldMap = worldMap;
     this->acc = 0.8f;
     this->res = 10.f;
@@ -47,6 +60,7 @@ Player::Player(float startX, float startY, Map worldMap) {
     this->y = startY;
     this->collisionBoxWidth = 0.5f;
     this->collisionBoxHeight = 0.2f;
+    this->state = action::idle;
 
     this->playerSprite.setTexture(&playerSheet);
     this->shadowSprite.setTexture(&shadow);
@@ -144,8 +158,8 @@ void Player::draw(RenderWindow& window, float displaySize, float cameraX, float 
     }
     if(this->state == action::idle)
         this->playerSprite.setTextureRect(IntRect({0, 32 * this->facing}, {32, 32}));
-    int walkFrame = floor(this->frameTimer / 10);
-    this->canFootstep = walkFrame % 2 == 0;
+    this->walkFrame = ceil(this->frameTimer / 10);
+    this->canFootstep = this->walkFrame % 2 == 0;
     if(canFootstep && this->state == action::walk){
         int soundGroup = worldMap.getSound(worldMap.getTile(floor(this->x), floor(this->y)));
         if(soundGroup == 0){
@@ -158,7 +172,7 @@ void Player::draw(RenderWindow& window, float displaySize, float cameraX, float 
         canFootstep = false;
     }
     if(this->state == action::walk)
-        this->playerSprite.setTextureRect(IntRect({32 + (walkFrame % 4) * 32, 32 * this->facing}, {32, 32}));
+        this->playerSprite.setTextureRect(IntRect({32 + (this->walkFrame % 4) * 32, 32 * this->facing}, {32, 32}));
 
     this->shadowSprite.setPosition(Vector2f((shadowX/tileSize) * displaySize - cameraX, (shadowY/tileSize) * displaySize - cameraY));
 

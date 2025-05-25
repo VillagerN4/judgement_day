@@ -28,6 +28,7 @@ private:
     int facing;
 
     int frameTimer;
+    int walkFrame;
     bool canFootstep;
 
     float acc;

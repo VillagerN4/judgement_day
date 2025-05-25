@@ -10,7 +10,7 @@ Crystal::Crystal(const string& texturePath, float cx, float cy, float radius, fl
         cout << "Nie udało się wczytać z pliku!";
     }
     sprite = make_unique<Sprite>(texture);
-    sprite->setScale(Vector2f(0.2f,0.2f));
+    sprite->setScale(Vector2f(2.f,2.f));
     sprite->setOrigin(Vector2f(texture.getSize().x / 2.f, texture.getSize().y / 2.f));
     sprite->setPosition(Vector2f(center.x + cos(angle) * radius, center.y + sin(angle) * radius));
 }

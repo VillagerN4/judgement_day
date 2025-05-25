@@ -21,11 +21,25 @@ public:
 
 class Hero {
 public:
+    enum class legsAction { idle, walk, jump };
+    enum class upperAction { idle, shoot };
+
     RectangleShape shape;
+    RectangleShape upper;
+    RectangleShape legs;
     RectangleShape shotgun; 
     int hp;
     bool isJumping;
     float jumpSpeed;
+    int facing;
+    int walkTimer;
+    int aim;
+    int frameTimer;
+    Vector2f dir;
+    int shootFrame;
+
+    legsAction legsState;
+    upperAction upperState;
 
     vector<Projectile2> projectiles;
     const int maxProjectiles = 5;

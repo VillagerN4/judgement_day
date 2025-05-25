@@ -9,7 +9,7 @@ using namespace sf;
 using namespace std;
 
 Map world;
-Player player;
+Player playerM;
 
 const float worldDisplaySize = 4.f;
 const float tileSize = 32.f;
@@ -29,16 +29,16 @@ void loadMap(const char* path){
 
     world = Map(tileset, path, tileSize, worldDisplaySize);
 
-    player = Player(0.5f, 10.f, world);
+    playerM = Player(0.5f, 10.f, world);
 }
 
 void worldTick(float deltaTime){
-    player.tickPlayer(deltaTime);
+    playerM.tickPlayer(deltaTime);
 }
 
 void displayWorld(RenderWindow& window, Vector2u window_size, float deltaTime){
-        cameraX = player.getX() * displaySize - window_size.x/2;
-        cameraY = player.getY() * displaySize - window_size.y/2;
+        cameraX = playerM.getX() * displaySize - window_size.x/2;
+        cameraY = playerM.getY() * displaySize - window_size.y/2;
 
         camLimitX = (world.getMapWidth() * displaySize) - window_size.x;
         camLimitY = (world.getMapHeight() * displaySize) - window_size.y;
@@ -54,5 +54,5 @@ void displayWorld(RenderWindow& window, Vector2u window_size, float deltaTime){
 
         world.setPosition(Vector2f(-cameraX, -cameraY));
         window.draw(world);
-        player.draw(window, displaySize, cameraX, cameraY, tileSize, deltaTime);
+        playerM.draw(window, displaySize, cameraX, cameraY, tileSize, deltaTime);
 }
