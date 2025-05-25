@@ -31,3 +31,12 @@
                 <li><strong>getGlobalBounds</strong> - pobiera hitbox kryształu</li>
             </ul>
 </section>
+<section id="PROJECTILE">
+            <h2>Klasa obiektów</h2>
+            <p>Zawiera tworzenie pocisków kryształó</p>
+            <ul>
+                <li><strong>Konstruktor PROJECTILE</strong> – tworzy pocisk którym strzelają kryształy</li>
+                <li><strong>Update i draw</strong> – Aktualizacja pozycji pocisku i rysowanie go </li>
+            </ul>
+</section>
+
