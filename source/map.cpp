@@ -9,14 +9,16 @@
 using namespace sf;
 using namespace std;
 
-const int tilesetTileCount = 12;
+const int tilesetTileCount = 22;
 
 const int overlayLayers = 8;
 const int connectLayers = 8;
 
-vector<int> pavementConnect = {2, 3, 4, 7, -1};
-vector<int> redBrickConnect = {3, 4, 5, 6, -1};
-vector<int> redBrickRoofConnect = {7, 8, -1};
+vector<int> pavementConnect = {2, 3, 4, 7, 8, 9, -1, 13, 14, 15, 18, 19, 20};
+vector<int> redBrickConnect = {3, 4, 5, 6, 13, -1, 18, 19, 20};
+vector<int> redBrickRoofConnect = {7, 8, 9, -1};
+vector<int> blueBrickConnect = {14, 15, 16, 17, 21, -1, 7, 8, 9};
+vector<int> blueBrickRoofConnect = {18, 19, 20, -1};
 
 const int overlayCount = 2;
 
@@ -26,15 +28,25 @@ Tile tilesetList[tilesetTileCount] = {
     Tile(0, 0, Color(0,0,0,255), 0, false, false, false),
     Tile(1, 0, Color(51,118,54,0), 5, true, false, false, overlays[0][0], overlays[0][1], 0),
     Tile(6, 0, Color(149,146,144,0), 3, true, true, false, 0, 0, 12, 1, pavementConnect, -1),
-    Tile(9, 0, Color(153,84,47,0), 3, true, true, true, overlays[1][0], overlays[1][1], 0, 2, redBrickConnect, 1),
+    Tile(9, 0, Color(153,84,47,0), 3, false, true, true, overlays[1][0], overlays[1][1], 0, 2, redBrickConnect, 1),
     Tile(12, 0, Color(178,109,79,0), 2, false, true, true, overlays[1][0], overlays[1][1], 0, 2, redBrickConnect, 1),
     Tile(14, 0, Color(62,45,38,0), 4, false, false, true, overlays[1][0], overlays[1][1], 1),
     Tile(18, 0, Color(139,57,32,0), 0, false, false, true, overlays[1][0], overlays[1][1], 1),
     Tile(19, 0, Color(99,90,85,0), 2, false, true, true, overlays[1][0], overlays[1][1], 12, 2, redBrickRoofConnect, 1),
-    Tile(21, 0, Color(141,78,37,0), 2, false, true, true, overlays[1][0], overlays[1][1], 12, 2, redBrickRoofConnect, 1),
-    Tile(0, 3, Color(22,23,26,0), 0, true, true, false, 0, 0, 12, 4, {9, 10, 11, -1}, -1),
-    Tile(1, 3, Color(185,191,211,0), 0, true, true, false, 0, 0, 0, 4, {10, -1}, -1),
-    Tile(2, 3, Color(214,217,224,0), 0, true, true, false, 0, 0, 12, 4, {9, 10, 11, -1}, -1)
+    Tile(21, 0, Color(141,78,37,0), 0, false, true, true, overlays[1][0], overlays[1][1], 12, 2, redBrickRoofConnect, 1),
+    Tile(22, 0, Color(200,210,224,0), 0, false, true, true, overlays[1][0], overlays[1][1], 12, 2, redBrickRoofConnect, 1),
+    Tile(0, 3, Color(22,23,26,0), 0, true, true, false, 0, 0, 12, 4, {10, 11, 12, -1}, -1),
+    Tile(1, 3, Color(185,191,211,0), 0, true, true, false, 0, 0, 0, 4, {11, -1}, -1),
+    Tile(2, 3, Color(214,217,224,0), 0, true, true, false, 0, 0, 12, 4, {10, 11, 12, -1}, -1),
+    Tile(23, 0, Color(255,191,27,0), 0, false, true, true, overlays[1][0], overlays[1][1], 0, 2, redBrickConnect, 1),
+    Tile(0, 6, Color(146,161,197,0), 3, false, true, true, overlays[1][0], overlays[1][1], 12, 5, blueBrickConnect, 1),
+    Tile(3, 6, Color(193,202,225,0), 2, false, true, true, overlays[1][0], overlays[1][1], 12, 5, blueBrickConnect, 1),
+    Tile(5, 6, Color(41,46,60,0), 4, false, false, true, overlays[1][0], overlays[1][1], 1),
+    Tile(9, 6, Color(56,66,91,0), 0, false, false, true, overlays[1][0], overlays[1][1], 1),
+    Tile(10, 6, Color(131,129,127,0), 2, false, true, true, overlays[1][0], overlays[1][1], 12, 2, blueBrickRoofConnect, 1),
+    Tile(21, 0, Color(103,50,15,0), 0, false, true, true, overlays[1][0], overlays[1][1], 12, 2, blueBrickRoofConnect, 1),
+    Tile(22, 0, Color(32,39,52,0), 0, false, true, true, overlays[1][0], overlays[1][1], 12, 2, blueBrickRoofConnect, 1),
+    Tile(24, 0, Color(208,60,60,0), 0, false, true, true, overlays[1][0], overlays[1][1], 12, 5, blueBrickConnect, 1)
 };
 
 int Map::getTile(int x, int y){
@@ -45,6 +57,14 @@ int Map::getTile(int x, int y){
         return -1;
     }
     return this->tileList[x + (y * this->mapWidth)];
+}
+
+int Map::getMapWidth(){
+    return this->mapWidth;
+}
+
+int Map::getMapHeight(){
+    return this->mapHeight;
 }
 
 bool Map::getCollision(int tile){

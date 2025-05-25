@@ -15,9 +15,10 @@ class Map : public Drawable, public Transformable
     private:
         Texture tileset;
         VertexArray vertexArray;
-        
+
         int mapWidth;
         int mapHeight;
+        
         float tileSize;
         float tileDisplaySize;
         vector<int> tileList;
@@ -35,6 +36,9 @@ class Map : public Drawable, public Transformable
         Map();
 
         int getTile(int x, int y);
+
+        int getMapWidth();
+        int getMapHeight();
 
         bool getCollision(int tile);
         
