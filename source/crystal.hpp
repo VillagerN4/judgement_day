@@ -2,27 +2,32 @@
 #define CRYSTAL_HPP
 
 #include <SFML/Graphics.hpp>
+#include <string>
+using namespace std;
 using namespace sf;
 class Crystal {
 public:
-    RectangleShape shape;
-    int hp;
+    Texture texture;
+    unique_ptr<sf::Sprite> sprite;
+    Crystal(const string& texturePath, float cx, float cy, float radius, float startAngle = 0.f, float angularSpeed = 1.f);
+
+    void update(float dt);
+    void takeDamage(int dmg);
+    void draw(RenderWindow& window);
+    FloatRect getGlobalBounds() const;
+    int getHP() const;
+    bool isAlive() const;
+
+private:
+    void updatePosition();
+
+
+    Vector2f center;
+    float radius;
+    float angle;
+    float angularSpeed;
     bool alive;
-
-    Crystal(float x, float y) : hp(5), alive(true) {
-        shape.setSize({30.f, 30.f});
-        shape.setFillColor(Color::Cyan);
-        shape.setPosition(Vector2f(x, y));
-    }
-
-    void takeDamage(int dmg) {
-        hp -= dmg;
-        if (hp <= 0) alive = false;
-    }
-
-    void draw(RenderWindow& window) {
-        if (alive) window.draw(shape);
-    }
+    int hp;
 };
 
 #endif
