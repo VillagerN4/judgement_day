@@ -1,5 +1,17 @@
 Link do strony dokumentacji: https://villagern4.github.io/judgement_day/
 
+#Wzór sekcji dokumentacji
+<section id="systemy">
+            <h2>Systemy</h2>
+            <p>Systemy aktualizują komponenty w czasie rzeczywistym:</p>
+            <ul>
+                <li><strong>RenderSystem</strong> – rysuje obiekty</li>
+                <li><strong>MovementSystem</strong> – obsługa ruchu</li>
+                <li><strong>CombatSystem</strong> – logika walki</li>
+                <li><strong>InventorySystem</strong> – zarządzanie ekwipunkiem</li>
+            </ul>
+        </section>
+
 g++ .\source\*.cpp -IC:/SFML/SFML-3.0.0/include -LC:/SFML/SFML-3.0.0/lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -o JudgementDay.exe
 
 # Judgement Day
