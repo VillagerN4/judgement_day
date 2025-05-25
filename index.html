@@ -1,9 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-    <title>Moja Strona</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentacja gry RPG w SFML</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; padding: 0;
+            background: #f4f4f4; color: #333;
+        }
+        header {
+            background: #333; color: #fff;
+            padding: 1em; text-align: center;
+        }
+        nav {
+            background: #444;
+            padding: 0.5em;
+            text-align: center;
+        }
+        nav a {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        main {
+            padding: 2em;
+            max-width: 900px;
+            margin: auto;
+            background: white;
+        }
+        h2 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0.3em;
+        }
+        pre {
+            background: #eee;
+            padding: 1em;
+            overflow-x: auto;
+        }
+        code {
+            font-family: monospace;
+        }
+        footer {
+            background: #333;
+            color: #ccc;
+            text-align: center;
+            padding: 1em;
+            margin-top: 2em;
+        }
+    </style>
 </head>
 <body>
-    <h1>Witaj na mojej stronie!</h1>
+    <header>
+        <h1>Dokumentacja: Gra RPG w SFML</h1>
+    </header>
+
+    <nav>
+        <a href="#wprowadzenie">Wprowadzenie</a>
+        <a href="#kompilacja">Kompilacja</a>
+        <a href="#struktura">Struktura Projektu</a>
+        <a href="#komponenty">Komponenty</a>
+        <a href="#systemy">Systemy</a>
+    </nav>
+
+    <main>
+        <section id="wprowadzenie">
+            <h2>Wprowadzenie</h2>
+            <p>Gra RPG została napisana w języku C++ z wykorzystaniem biblioteki <strong>SFML</strong>. Celem projektu jest stworzenie prostego silnika 2D z systemem walki, inwentarzem i eksploracją mapy.</p>
+        </section>
+
+        <section id="kompilacja">
+            <h2>Kompilacja</h2>
+            <p>Aby skompilować grę, potrzebujesz:</p>
+            <ul>
+                <li>SFML 2.5+</li>
+                <li>kompilator C++ (np. g++, clang, MSVC)</li>
+                <li>CMake (opcjonalnie)</li>
+            </ul>
+            <pre><code>g++ main.cpp Game.cpp Player.cpp -o rpg -lsfml-graphics -lsfml-window -lsfml-system</code></pre>
+        </section>
+
+        <section id="struktura">
+            <h2>Struktura Projektu</h2>
+            <ul>
+                <li><code>main.cpp</code> – punkt wejścia</li>
+                <li><code>Game.cpp/.h</code> – pętla gry, zarządzanie stanami</li>
+                <li><code>Player.cpp/.h</code> – logika gracza</li>
+                <li><code>Map.cpp/.h</code> – generowanie i renderowanie mapy</li>
+                <li><code>Enemy.cpp/.h</code> – wrogowie</li>
+                <li><code>Inventory.cpp/.h</code> – system ekwipunku</li>
+            </ul>
+        </section>
+
+        <section id="komponenty">
+            <h2>Komponenty</h2>
+            <p>Projekt wykorzystuje podejście komponentowe (ECS):</p>
+            <ul>
+                <li><strong>PositionComponent</strong> – pozycja obiektu</li>
+                <li><strong>SpriteComponent</strong> – grafika obiektu</li>
+                <li><strong>StatsComponent</strong> – HP, mana, atak, obrona</li>
+                <li><strong>InventoryComponent</strong> – zawartość plecaka</li>
+            </ul>
+        </section>
+
+        <section id="systemy">
+            <h2>Systemy</h2>
+            <p>Systemy aktualizują komponenty w czasie rzeczywistym:</p>
+            <ul>
+                <li><strong>RenderSystem</strong> – rysuje obiekty</li>
+                <li><strong>MovementSystem</strong> – obsługa ruchu</li>
+                <li><strong>CombatSystem</strong> – logika walki</li>
+                <li><strong>InventorySystem</strong> – zarządzanie ekwipunkiem</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2025 Gra RPG w SFML – Projekt Open Source
+    </footer>
 </body>
 </html>
