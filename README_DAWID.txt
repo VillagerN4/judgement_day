@@ -21,3 +21,13 @@
                 <li><strong>phaseTwoAttack</strong> – Druga faza bossa polega na strzelaniu pociskami które lecą w stronę gracza </li>
             </ul>
 </section>
+<section id="CRYSTAL">
+            <h2>Klasa kryształu</h2>
+            <p>Zawiera tworzenie kryształów które strzelają w gracz</p>
+            <ul>
+                <li><strong>Konstruktor Crystal</strong> – tworzy obiekt kryształu, ustawia teksturę, życie i okrąg według które ma się obracać </li>
+                <li><strong>Update</strong> – Aktualizacja pozycji kryształu ze względu na obracanie</li>
+                <li><strong>takeDamage, isAlive i getHP</strong> – otrzymuje obrażenia, sprawdza czy żyje i pobiera Hp </li>
+                <li><strong>getGlobalBounds</strong> - pobiera hitbox kryształu</li>
+            </ul>
+</section>
