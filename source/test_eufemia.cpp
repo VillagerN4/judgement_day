@@ -21,9 +21,9 @@ int main() {
     window.setFramerateLimit(60);
 
     Hero player(100.f, WINDOW_SIZE.y - 150.f, 20);
-    Boss witch(WINDOW_SIZE.x / 2.f - 75.f, 340.f, "txtures/eufemia.png", 20);
-    Crystal leftCrystal("txtures/Diament.png", 220.f, 200.f, 120.f);
-    Crystal rightCrystal("txtures/Diament.png", WINDOW_SIZE.x - 220.f, 200.f, 120.f);
+    Boss witch(WINDOW_SIZE.x / 2.f - 75.f, 340.f, "assets/textures/entity/boss/eufemia/eufemia.png", 20);
+    Crystal leftCrystal("assets/textures/entity/boss/eufemia/crystal.png", 220.f, 200.f, 120.f);
+    Crystal rightCrystal("assets/textures/entity/boss/eufemia/crystal.png", WINDOW_SIZE.x - 220.f, 200.f, 120.f);
 
     vector<Projectile> enemyProjectiles;
     Clock clock;
