@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dokumentacja gry RPG w SFML</title>
+    <title>Dokumentacja Judgement Day RPG w SFML</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,15 +53,18 @@
 </head>
 <body>
     <header>
-        <h1>Dokumentacja: Gra RPG w SFML</h1>
+        <h1>Dokumentacja: Judgement Day</h1>
     </header>
 
     <nav>
         <a href="#wprowadzenie">Wprowadzenie</a>
         <a href="#kompilacja">Kompilacja</a>
-        <a href="#struktura">Struktura Projektu</a>
-        <a href="#komponenty">Komponenty</a>
-        <a href="#systemy">Systemy</a>
+        <a href="#HERO">Hero</a>
+        <a href="#BOSSES">Boss</a>
+        <a href="#CRYSTAL">Kryształ ( ͡° ͜ʖ ͡°)</a>
+        <a href="#PROJECTILE">Pociski</a>
+        <a href="#UI">UI</a>
+        <a href="#PLATFORM">Platforma</a>
     </nav>
 
     <main>
@@ -74,44 +77,69 @@
             <h2>Kompilacja</h2>
             <p>Aby skompilować grę, potrzebujesz:</p>
             <ul>
-                <li>SFML 2.5+</li>
-                <li>kompilator C++ (np. g++, clang, MSVC)</li>
-                <li>CMake (opcjonalnie)</li>
+                <li>SFML 3.0.0</li>
+                <li>kompilator SFML 3.0.0 C++ dla MinGW (pobrany ze strony: https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-ucrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64ucrt-12.0.0-r2.7z)</li>
             </ul>
             <pre><code>g++ main.cpp Game.cpp Player.cpp -o rpg -lsfml-graphics -lsfml-window -lsfml-system</code></pre>
         </section>
-
-        <section id="struktura">
-            <h2>Struktura Projektu</h2>
+        
+        <section id="HERO">
+            <h2>Klasa Bohatera</h2>
+            <p>Zawiera klasy naszego bohatera i pocisków którymi strzela</p>
             <ul>
-                <li><code>main.cpp</code> – punkt wejścia</li>
-                <li><code>Game.cpp/.h</code> – pętla gry, zarządzanie stanami</li>
-                <li><code>Player.cpp/.h</code> – logika gracza</li>
-                <li><code>Map.cpp/.h</code> – generowanie i renderowanie mapy</li>
-                <li><code>Enemy.cpp/.h</code> – wrogowie</li>
-                <li><code>Inventory.cpp/.h</code> – system ekwipunku</li>
+                <li><strong>Projectile 2</strong> – tworzy pociski strzelane przez gracza przy bosie Eufemi</li>
+                <li><strong>Update, updateProjectiles2 i draw</strong> – logika resetowania pocisków  i rysowanie obiektów (gracza, pocisków)</li>
+                <li><strong>Hero</strong> – Tworzenie gracza </li>
+                <li><strong>handleMovement, handleJumping</strong> – obsługa poruszania się gracza</li>
+                <li><strong>shoot</strong> – poruszanie się pocisków </li>
+                <li><strong>takeDamage</strong> – dostawanie obrażeń gracza</li>
             </ul>
         </section>
 
-        <section id="komponenty">
-            <h2>Komponenty</h2>
-            <p>Projekt wykorzystuje podejście komponentowe (ECS):</p>
+        <section id="BOSSES">
+            <h2>Klasa Eufemi</h2>
+            <p>Zawiera tworzenie Bossa</p>
             <ul>
-                <li><strong>PositionComponent</strong> – pozycja obiektu</li>
-                <li><strong>SpriteComponent</strong> – grafika obiektu</li>
-                <li><strong>StatsComponent</strong> – HP, mana, atak, obrona</li>
-                <li><strong>InventoryComponent</strong> – zawartość plecaka</li>
+                <li><strong>Konstruktor Boss</strong> – tworzy obiekt Bossa i ustawia teksturę i życie</li>
+                <li><strong>getHP,takeDamage i isAlive </strong> – sprawdza życie bossa i zadaje mu obrażenia </li>
+                <li><strong>phaseTwoAttack</strong> – Druga faza bossa polega na strzelaniu pociskami które lecą w stronę gracza </li>
             </ul>
         </section>
 
-        <section id="systemy">
-            <h2>Systemy</h2>
-            <p>Systemy aktualizują komponenty w czasie rzeczywistym:</p>
+        <section id="CRYSTAL">
+            <h2>Klasa kryształu</h2>
+            <p>Zawiera tworzenie kryształów które strzelają w gracz</p>
             <ul>
-                <li><strong>RenderSystem</strong> – rysuje obiekty</li>
-                <li><strong>MovementSystem</strong> – obsługa ruchu</li>
-                <li><strong>CombatSystem</strong> – logika walki</li>
-                <li><strong>InventorySystem</strong> – zarządzanie ekwipunkiem</li>
+                <li><strong>Konstruktor Crystal</strong> – tworzy obiekt kryształu, ustawia teksturę, życie i okrąg według które ma się obracać </li>
+                <li><strong>Update</strong> – Aktualizacja pozycji kryształu ze względu na obracanie</li>
+                <li><strong>takeDamage, isAlive i getHP</strong> – otrzymuje obrażenia, sprawdza czy żyje i pobiera Hp </li>
+                <li><strong>getGlobalBounds</strong> - pobiera hitbox kryształu</li>
+            </ul>
+        </section>
+
+        <section id="PROJECTILE">
+            <h2>Klasa obiektów</h2>
+            <p>Zawiera tworzenie pocisków kryształó</p>
+            <ul>
+                <li><strong>Konstruktor PROJECTILE</strong> – tworzy pocisk którym strzelają kryształy</li>
+                <li><strong>Update i draw</strong> – Aktualizacja pozycji pocisku i rysowanie go </li>
+            </ul>
+        </section>
+
+        <section id="UI">
+            <h2>Hpbars</h2>
+            <p>Zawiera tworzenie pasków życia </p>
+            <ul>
+                <li><strong>UI</strong> – tworzy paski życia dla gracza,kryształów i bossa </li>
+                <li><strong>Update</strong> – Aktualizacja pasku życia </li>
+            </ul>
+        </section>
+
+        <section id="PLATFORM">
+            <h2>Platforma</h2>
+            <p>Zawiera tworzenie platformu n aktórej stoi gracz </p>
+            <ul>
+                <li><strong>Platform</strong> – tworzy platformę </li>
             </ul>
         </section>
     </main>
@@ -121,3 +149,4 @@
     </footer>
 </body>
 </html>
+
