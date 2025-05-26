@@ -44,7 +44,7 @@ void loadMap(const char* path){
 
     playerM = Player(0.5f, 10.f, world);
 
-    eufemia = NPC(Vector2f{25.5f, 10.f}, &euf);
+    eufemia = NPC(Vector2f{60.5f, 33.f}, &euf);
     npc2 = NPC(Vector2f{9.5f, 6.f}, &blak);
 }
 

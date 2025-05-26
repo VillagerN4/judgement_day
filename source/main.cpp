@@ -205,7 +205,7 @@ int main() {
     // player.setPosition(Vector2f(375.f, 275.f));
 
     float musicVolume = 50.f;
-    bool isFullscreen = false;
+    bool isFullscreen = true;
     
     Music music;
     if (music.openFromFile("assets\\sounds\\music\\RightBehindYou.wav")) {
@@ -539,8 +539,13 @@ int main() {
                 begin.stop();
                 grandma20.stop();
                 grandma20begin.stop();
-                if(event->is<Event::MouseButtonPressed>())
-                    window.close();
+                if(event->is<Event::MouseButtonPressed>()){
+                    if(isWin){
+                        state = GameState::World;
+                    }else{
+                        window.close();
+                    }
+                }
             }
         }
         
@@ -655,7 +660,7 @@ int main() {
 
                     isEufemia = true;
                     float deltaTime = dt;
-                    playerHpBar.setSize(Vector2f(200.f * (float)player.hp / 100.f, 20.f));
+                    playerHpBar.setSize(Vector2f(200.f * (float)player.hp / 20.f, 20.f));
 
                     if(player.hp <= 0){
                         state = GameState::EndScreen;
