@@ -13,6 +13,10 @@ void loadMap(const char* path);
 
 void worldTick(float deltaTime);
 
+bool checkEufemia();
+
+bool checkBlack();
+
 void displayWorld(RenderWindow& window, Vector2u window_size, float deltaTime);
 
 #endif

@@ -36,8 +36,6 @@ const float HIT_WINDOW = 50.f;
 const int MAX_NOTES = 485;
 const int MAX_MISSES = 20;
 
-
-
 struct Note {
     CircleShape shape;
     int lane;
@@ -75,6 +73,9 @@ int main() {
     RenderWindow window(VideoMode(WINDOW_SIZE), "Judgement Day", State::Fullscreen, settings);
     window.setFramerateLimit(60);
     GameState state = GameState::Menu;
+
+    bool isWin = false;
+    bool playedSong = false;
 
     //Menu i grafika
 
@@ -219,7 +220,41 @@ int main() {
     if (musicWorld.openFromFile("assets\\sounds\\music\\ThreeItems.wav")) {
         musicWorld.setLooping(true);
         musicWorld.setVolume(musicVolume);
-        // musicWorld.play();
+    } else {
+        cout << "Music not available!" << endl;
+    }
+
+    Music grandma20begin;
+    if (grandma20begin.openFromFile("assets\\sounds\\music\\GrandmaTwoPointO_intro.wav")) {
+        grandma20begin.setVolume(musicVolume);
+    } else {
+        cout << "Music not available!" << endl;
+    }
+    Music grandma20;
+    if (grandma20.openFromFile("assets\\sounds\\music\\GrandmaTwoPointO_loop.wav")) {
+        grandma20.setLooping(true);
+        grandma20.setVolume(musicVolume);
+    } else {
+        cout << "Music not available!" << endl;
+    }
+
+    Music win;
+    if (win.openFromFile("assets\\sounds\\music\\Win.wav")) {
+        win.setVolume(musicVolume);
+    } else {
+        cout << "Music not available!" << endl;
+    }
+
+    Music begin;
+    if (begin.openFromFile("assets\\sounds\\music\\Begin.wav")) {
+        begin.setVolume(musicVolume);
+    } else {
+        cout << "Music not available!" << endl;
+    }
+
+    Music loss;
+    if (loss.openFromFile("assets\\sounds\\music\\Loss.wav")) {
+        loss.setVolume(musicVolume);
     } else {
         cout << "Music not available!" << endl;
     }
@@ -228,7 +263,6 @@ int main() {
     if (rain.openFromFile("assets\\sounds\\ambient\\rain.wav")) {
         rain.setLooping(true);
         rain.setVolume(75.f);
-        // rain.play();
     } else {
         cout << "Music not available!" << endl;
     }
@@ -364,7 +398,9 @@ int main() {
                         }
                         else if (keyEvent->code == Keyboard::Key::Enter) {
                             if (selectedIndex == 0) {
-                                state = GameState::BossSelect;
+                                state = GameState::World;
+                                music.stop();
+                                begin.play();
                             }
                             else if (selectedIndex == 1) {
                                 state = GameState::Settings;
@@ -496,6 +532,15 @@ int main() {
                         }
                     }
                 }
+            }else if(state == GameState::EndScreen){
+                music.stop();
+                musicWorld.stop();
+                guitar_music.stop();
+                begin.stop();
+                grandma20.stop();
+                grandma20begin.stop();
+                if(event->is<Event::MouseButtonPressed>())
+                    window.close();
             }
         }
         
@@ -571,12 +616,14 @@ int main() {
 
             if (misses >= MAX_MISSES) {
                 gameOver = true;
+                isWin = false;
                 resultText.setString("Game Over");
                 FloatRect textBounds = resultText.getLocalBounds();
                 resultText.setOrigin(Vector2f(textBounds.position.x / 2.f, textBounds.position.y / 2.f));
                 resultText.setPosition(Vector2f(1920 / 2.f, 1080 / 2.f));
                 guitar_music.stop();
             } else if (notesSpawned == MAX_NOTES && notes.empty()) {
+                isWin = true;
                 gameOver = true;
                 victory = true;
                 resultText.setString("Boss Defeated!");
@@ -600,21 +647,23 @@ int main() {
                 screenFlash = false;
                 flashTimer = 0.f;
             }
-                if(Keyboard::isKeyPressed(Keyboard::Scan::Escape))
-                    state = GameState::GameOptions;
 
                 }else if(state == GameState::Eufemia){
-                            isEufemia = true;
+
+                    if(grandma20begin.getStatus() == SoundSource::Status::Stopped && grandma20.getStatus() == SoundSource::Status::Stopped)
+                        grandma20.play();
+
+                    isEufemia = true;
                     float deltaTime = dt;
                     playerHpBar.setSize(Vector2f(200.f * (float)player.hp / 100.f, 20.f));
 
-                    // if(player.hp <= 0){
-                    //     state = GameState::EndScreen;
-                    // }else if (witch.getHP())
-                    // {
-                    //     isWin = true;
-                    //     state = Gamestate::EndScreen;
-                    // }
+                    if(player.hp <= 0){
+                        state = GameState::EndScreen;
+                    }else if (witch.getHP() <= 0)
+                    {
+                        isWin = true;
+                        state = GameState::EndScreen;
+                    }
                     
                     player.handleMovement(deltaTime, 300.f, window.getSize());
                     player.handleJumping(deltaTime, WINDOW_SIZE.y - 150.f);
@@ -717,19 +766,43 @@ int main() {
                     leftCrystalHp.setSize(Vector2f(150.f * (float)leftCrystal.getHP() / 5.f, 15.f));
                     rightCrystalHp.setSize(Vector2f(150.f * (float)rightCrystal.getHP() / 5.f, 15.f));
                     bossHp.setSize(Vector2f(300.f * (float)witch.getHP() / 20.f, 20.f));
-                if(Keyboard::isKeyPressed(Keyboard::Scan::Escape))
-                    state = GameState::GameOptions;
-                }else if(state == GameState::World){
-                    worldTick(dt);
 
+                }else if(state == GameState::World){
                     isWorld = true;
 
                     if(Keyboard::isKeyPressed(Keyboard::Scan::Escape))
                         state = GameState::GameOptions;
+                    
+                    if(begin.getStatus() == SoundSource::Status::Stopped && musicWorld.getStatus() == SoundSource::Status::Stopped){
+                        musicWorld.play();
+                    }
+
+                    worldTick(dt);
+
+                    if(checkEufemia()){
+                        state = GameState::Eufemia;
+                        isWorld = false;
+                        isEufemia = true;
+                        begin.stop();
+                        musicWorld.stop();
+                        grandma20begin.play();
+
+                        loadMap("source\\map\\level_data\\test_level.bmp");
+                    }
+                    
+                    if(checkBlack()){
+                        state = GameState::Guitar;
+                        isWorld = false;
+                        isGuitar = true;
+                        guitar_music.play();
+                        begin.stop();
+                        musicWorld.stop();
+                        loadMap("source\\map\\level_data\\test_level.bmp");
+                    }
                 }
             
         
-        window.clear();
+        window.clear(Color::Black);
                 
         if (state == GameState::Menu) {
             isGuitar = false;
@@ -754,8 +827,7 @@ int main() {
                 window.draw(n.shape);
             window.draw(scoreText);
             if (gameOver){
-                window.draw(resultText);
-                state = GameState::Menu;
+                state = GameState::EndScreen;
             }
             if (screenFlash)
                 window.draw(flashOverlay);
@@ -857,6 +929,31 @@ window.draw(arena);
                 window.draw(gameOptions[i]);
             }
             window.draw(line);
+        }else if(state == GameState::EndScreen){
+            Text m_message(font);
+            m_message.setCharacterSize(48);
+            m_message.setStyle(Text::Bold);
+            if(isWin){
+                if(win.getStatus() == SoundSource::Status::Stopped && !playedSong){
+                    win.play();
+                    playedSong = true;
+                }
+                m_message.setString("Congratulations, victory! \n Press Mouse to continue.");
+                m_message.setFillColor(Color::Green);
+            }else{
+                if(loss.getStatus() == SoundSource::Status::Stopped && !playedSong){
+                    loss.play();
+                    playedSong = true;
+                }
+                m_message.setString("Congratulations, you are a failure! \n Press Mouse to continue.");
+                m_message.setFillColor(Color::Red);
+            }
+
+        FloatRect textRect = m_message.getLocalBounds();
+        m_message.setOrigin(Vector2f(textRect.position.x + textRect.size.x / 2.0f,
+                            textRect.position.y + textRect.size.y / 2.0f));
+        m_message.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f));
+            window.draw(m_message);
         }
         window.display();
 
