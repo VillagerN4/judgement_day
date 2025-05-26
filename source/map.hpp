@@ -41,6 +41,7 @@ class Map : public Drawable, public Transformable
         int getMapHeight();
 
         bool getCollision(int tile);
+        int getSound(int tile);
         
 };
 
