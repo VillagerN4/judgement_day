@@ -23,6 +23,7 @@
             color: #fff;
             margin: 0 15px;
             text-decoration: none;
+            font-size: 12px;
         }
         main {
             padding: 2em;
@@ -49,9 +50,17 @@
             padding: 1em;
             margin-top: 2em;
         }
+        #return {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+            background: #444;
+            padding: 0.5em;
+            text-align: center;
+        }
     </style>
 </head>
-<body>
+<body id = "Strona">
     <header>
         <h1>Dokumentacja: Judgement Day</h1>
     </header>
@@ -59,12 +68,18 @@
     <nav>
         <a href="#wprowadzenie">Wprowadzenie</a>
         <a href="#kompilacja">Kompilacja</a>
-        <a href="#HERO">Hero</a>
-        <a href="#BOSSES">Boss</a>
-        <a href="#CRYSTAL">Kryształ ( ͡° ͜ʖ ͡°)</a>
-        <a href="#PROJECTILE">Pociski</a>
-        <a href="#UI">UI</a>
-        <a href="#PLATFORM">Platforma</a>
+        <a href="#boss">Boss</a>
+        <a href="#crystal">Kryształ ( ͡° ͜ʖ ͡°)</a>
+        <a href="#hero">Hero</a>
+        <a href="#pociski (broń)">Pociski od broni</a>
+        <a href="#map">Mapa</a>
+        <a href="#npc">NPC</a>        
+        <a href="#platform">Platforma</a>
+        <a href="#pociski (eufemia)">Pociski od bossa</a>
+        <a href="#plytki">Płytki mapy</a>
+        <a href="#ui">UI</a>
+        <a href="#World Map">Mapa Świata Gry</a>
+        <a href="#Gra">Gra</a>
     </nav>
 
     <main>
@@ -83,69 +98,502 @@
             <pre><code>g++ main.cpp Game.cpp Player.cpp -o rpg -lsfml-graphics -lsfml-window -lsfml-system</code></pre>
         </section>
         
-        <section id="HERO">
-            <h2>Klasa Bohatera</h2>
-            <p>Zawiera klasy naszego bohatera i pocisków którymi strzela</p>
+       <section id = "boss">
+        <h2>Klasa Boss</h2>
+        <ul>
+            <li>Reprezentuje głównego przeciwnika w grze – bossa o imieniu Eufemia.</li>
+
+            <li><strong>Konstruktor:</strong>
             <ul>
-                <li><strong>Projectile 2</strong> – tworzy pociski strzelane przez gracza przy bosie Eufemi</li>
-                <li><strong>Update, updateProjectiles2 i draw</strong> – logika resetowania pocisków  i rysowanie obiektów (gracza, pocisków)</li>
-                <li><strong>Hero</strong> – Tworzenie gracza </li>
-                <li><strong>handleMovement, handleJumping</strong> – obsługa poruszania się gracza</li>
-                <li><strong>shoot</strong> – poruszanie się pocisków </li>
-                <li><strong>takeDamage</strong> – dostawanie obrażeń gracza</li>
+                <li><code>Boss(float x, float y, const string&amp; texturePath, int HP)</code> – tworzy bossa, wczytuje teksturę i ustawia pozycję oraz skalę sprite’a.</li>
             </ul>
+            </li>
+
+            <li><strong>Pola publiczne:</strong>
+            <ul>
+                <li><code>RectangleShape shape</code> – nieużywany placeholder, potencjalnie do kolizji lub debugowania.</li>
+                <li><code>RectangleShape shotgunShape</code> – nieużywany, może być użyty do wizualizacji broni.</li>
+                <li><code>Texture shotgunTexture</code> – tekstura broni, obecnie niewykorzystywana.</li>
+                <li><code>unique_ptr&lt;Sprite&gt; sprite</code> – graficzny obiekt reprezentujący bossa.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola prywatne:</strong>
+            <ul>
+                <li><code>Texture texture</code> – załadowana tekstura postaci bossa.</li>
+                <li><code>int hp</code> – punkty życia bossa (np. 20).</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody publiczne:</strong>
+            <ul>
+                <li><code>void takeDamage(int damage)</code> – odejmuje podaną ilość życia.</li>
+                <li><code>bool isAlive() const</code> – zwraca true, jeśli <code>hp &gt; 0</code>.</li>
+                <li><code>void draw(RenderWindow&amp; window)</code> – rysuje sprite bossa, jeśli został poprawnie załadowany.</li>
+                <li><code>int getHP() const</code> – zwraca aktualne punkty życia.</li>
+                <li><code>void phaseTwoAttack(Hero&amp; player, vector&lt;Projectile&gt;&amp; projectiles)</code>
+                <ul>
+                    <li>Atak fazy drugiej.</li>
+                    <li>W 50% przypadków wykonuje prosty atak pociskiem skierowanym do gracza.</li>
+                    <li>W przeciwnym wypadku wykonuje „shotgun” – trzy pociski pod różnymi kątami (obrót o ±15°).</li>
+                    <li>Pociski trafiają do wektora <code>projectiles</code>.</li>
+                </ul>
+                </li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section id = "crystal">
+        <h2>Klasa Crystal</h2>
+        <ul>
+            <li>Reprezentuje wrogie kryształy, które poruszają się po okręgu i atakują gracza.</li>
+
+            <li><strong>Konstruktor:</strong>
+            <ul>
+                <li><code>Crystal(const string&amp; texturePath, float cx, float cy, float radius, float startAngle = 0.f, float angularSpeed = 1.f)</code> – inicjalizuje kryształ z podaną teksturą, pozycją środkową, promieniem okręgu, kątem początkowym i prędkością kątową.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola prywatne:</strong>
+            <ul>
+                <li><code>Vector2f center</code> – środek okręgu ruchu.</li>
+                <li><code>float radius</code> – promień okręgu.</li>
+                <li><code>float angle</code> – aktualny kąt w radianach.</li>
+                <li><code>float angularSpeed</code> – prędkość obrotowa (radiany na sekundę).</li>
+                <li><code>int hp</code> – punkty życia (domyślnie 5).</li>
+                <li><code>bool alive</code> – status aktywności kryształu.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola publiczne:</strong>
+            <ul>
+                <li><code>Texture texture</code> – tekstura kryształu.</li>
+                <li><code>unique_ptr&lt;sf::Sprite&gt; sprite</code> – graficzny obiekt kryształu.</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody publiczne:</strong>
+            <ul>
+                <li><code>void update(float dt)</code> – aktualizuje pozycję kryształu na podstawie ruchu po okręgu.</li>
+                <li><code>void takeDamage(int dmg)</code> – odejmuje punkty życia; jeżeli hp &le; 0, ustawia <code>alive = false</code>.</li>
+                <li><code>void draw(RenderWindow&amp; window)</code> – rysuje kryształ tylko jeśli jest aktywny.</li>
+                <li><code>bool isAlive() const</code> – sprawdza, czy kryształ nadal żyje.</li>
+                <li><code>FloatRect getGlobalBounds() const</code> – zwraca granice sprite’a do detekcji kolizji.</li>
+                <li><code>int getHP() const</code> – zwraca aktualne punkty życia.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section id = "hero">
+        <h2>Klasa Hero</h2>
+        <ul>
+            <li>Reprezentuje postać gracza – sterowaną ręcznie, z animacjami i możliwością strzelania z shotguna w łuku.</li>
+
+            <li><strong>Konstruktor:</strong>
+            <ul>
+                <li><code>Hero(float x, float y, int HP)</code> – tworzy postać gracza w pozycji (x, y), z określoną liczbą punktów życia. Ładuje tekstury nóg i tułowia, konfiguruje shotgun i sprite’y.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola publiczne:</strong>
+            <ul>
+                <li><code>RectangleShape shape</code> – główny kształt (kolizja).</li>
+                <li><code>RectangleShape upper</code> – część górna ciała (ramiona, broń).</li>
+                <li><code>RectangleShape legs</code> – część dolna (nogi).</li>
+                <li><code>RectangleShape shotgun</code> – graficzna reprezentacja shotguna.</li>
+                <li><code>int hp</code> – punkty życia.</li>
+                <li><code>bool isJumping</code> – stan skoku.</li>
+                <li><code>float jumpSpeed</code> – prędkość pionowa.</li>
+                <li><code>int facing</code> – kierunek twarzy (0 = prawo, 1 = lewo).</li>
+                <li><code>int walkTimer</code> – licznik do animacji kroków.</li>
+                <li><code>int aim</code> – kod pozycji celowania.</li>
+                <li><code>int frameTimer</code> – ogólny licznik klatek.</li>
+                <li><code>int shootFrame</code> – czas ostatniego strzału (do animacji).</li>
+                <li><code>Vector2f dir</code> – kierunek celowania / ruchu.</li>
+                <li><code>legsAction legsState</code> – stan nóg (idle/walk/jump).</li>
+                <li><code>upperAction upperState</code> – stan ramion (nieużywane jeszcze).</li>
+                <li><code>vector&lt;Projectile2&gt; projectiles</code> – pociski gracza.</li>
+                <li><code>const int maxProjectiles</code> – limit jednoczesnych pocisków (5).</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody publiczne:</strong>
+            <ul>
+                <li><code>void handleMovement(float deltaTime, float speed, Vector2u windowSize)</code> – obsługuje poruszanie w poziomie i ustawia animacje nóg i twarzy.</li>
+                <li><code>void handleJumping(float deltaTime, float groundHeight)</code> – obsługuje skoki i lądowanie.</li>
+                <li><code>void shoot()</code> – wystrzeliwuje 3 pociski pod różnymi kątami (shotgun), ustawia rotację broni.</li>
+                <li><code>void updateProjectiles2(float deltaTime)</code> – aktualizuje pociski i usuwa te poza ekranem.</li>
+                <li><code>void takeDamage(int damage)</code> – odejmuje życie.</li>
+                <li><code>void draw(RenderWindow&amp; window)</code> – rysuje gracza (nogami, tułowiem, animacjami) i jego pociski.</li>
+            </ul>
+            </li>
+        </ul>
         </section>
 
-        <section id="BOSSES">
-            <h2>Klasa Eufemi</h2>
-            <p>Zawiera tworzenie Bossa</p>
+        <section id = "pociski (broń)">
+        <h2>Klasa Projectile2</h2>
+        <ul>
+            <li>Pocisk wystrzeliwany przez gracza – mały żółty okrąg.</li>
+
+            <li><strong>Konstruktor:</strong>
             <ul>
-                <li><strong>Konstruktor Boss</strong> – tworzy obiekt Bossa i ustawia teksturę i życie</li>
-                <li><strong>getHP,takeDamage i isAlive </strong> – sprawdza życie bossa i zadaje mu obrażenia </li>
-                <li><strong>phaseTwoAttack</strong> – Druga faza bossa polega na strzelaniu pociskami które lecą w stronę gracza </li>
+                <li><code>Projectile2(float x, float y, Vector2f vel)</code> – tworzy pocisk w podanej pozycji z daną prędkością.</li>
             </ul>
+            </li>
+
+            <li><strong>Pola:</strong>
+            <ul>
+                <li><code>CircleShape shape</code> – graficzna forma pocisku.</li>
+                <li><code>Vector2f velocity</code> – kierunek i prędkość poruszania się.</li>
+                <li><code>bool active</code> – czy pocisk jest aktywny.</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody:</strong>
+            <ul>
+                <li><code>void update(float deltaTime)</code> – przemieszcza pocisk zgodnie z jego prędkością, dezaktywuje go po opuszczeniu ekranu.</li>
+                <li><code>void draw(RenderWindow&amp; window)</code> – rysuje pocisk, jeśli jest aktywny.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+                <section id = "map">
+                    <h2>Mapa</h2> 
+                    <ul><li>Reprezentuje mapę gry – siatkę kafelków (tiles) z teksturą tilesetu, umożliwiającą rysowanie, odczyt kafelków i sprawdzanie kolizji.</li>
+                        <li><strong>Konstruktory:</strong>
+        <ul>
+            <li><code>Map(Texture tileset, const char* path, float tileSize, float tileDisplaySize)</code> – tworzy mapę, ładując teksturę tilesetu oraz dane mapy z pliku, ustawia rozmiary kafelków i wyświetlania.</li>
+            <li><code>Map()</code> – domyślny konstruktor (pusty).</li>
+        </ul>
+    </li>
+
+    <li><strong>Pola prywatne:</strong>
+        <ul>
+            <li><code>Texture tileset</code> – tekstura zawierająca wszystkie kafelki.</li>
+            <li><code>VertexArray vertexArray</code> – tablica wierzchołków do efektywnego rysowania kafelków.</li>
+            <li><code>int mapWidth</code> – szerokość mapy w kafelkach.</li>
+            <li><code>int mapHeight</code> – wysokość mapy w kafelkach.</li>
+            <li><code>float tileSize</code> – rozmiar kafelka w teksturze (w pikselach).</li>
+            <li><code>float tileDisplaySize</code> – rozmiar kafelka na ekranie (w pikselach).</li>
+            <li><code>vector&lt;int&gt; tileList</code> – lista indeksów kafelków na mapie.</li>
+        </ul>
+    </li>
+
+    <li><strong>Metody prywatne:</strong>
+        <ul>
+            <li><code>void draw(RenderTarget&amp; target, RenderStates states) const</code> – metoda rysująca mapę, wywoływana automatycznie przez SFML.</li>
+            <li><code>void addVertex(int x, int y, int tu, int tv, int offset)</code> – dodaje wierzchołki do vertexArray dla kafelka o współrzędnych tekstury <code>tu</code>, <code>tv</code> i pozycji mapy <code>x</code>, <code>y</code>.</li>
+        </ul>
+    </li>
+
+    <li><strong>Metody publiczne:</strong>
+        <ul>
+            <li><code>int getTile(int x, int y)</code> – zwraca indeks kafelka na pozycji (x, y); jeśli poza zakresem, zwraca -1.</li>
+            <li><code>int getMapWidth()</code> – zwraca szerokość mapy w kafelkach.</li>
+            <li><code>int getMapHeight()</code> – zwraca wysokość mapy w kafelkach.</li>
+            <li><code>bool getCollision(int tile)</code> – sprawdza, czy kafelek o danym indeksie jest kolizyjny (funkcja deklarowana, implementacja poza tym fragmentem).</li>
+            <li><code>int getSound(int tile)</code> – zwraca kod dźwięku przypisanego do kafelka (funkcja deklarowana, implementacja poza tym fragmentem).</li>
+        </ul>
+    </li>
+        </ul>
+        </section>
+        <section id = "npc"> <h2>Klasa NPC</h2> <ul> <li>Reprezentuje postać NPC (Non-Player Character) w grze, z prostą detekcją kolizji i możliwością rysowania z cieniem.</li>
+            <li><strong>Konstruktor:</strong>
+        <ul>
+            <li><code>NPC()</code> – konstruktor domyślny, nie inicjalizuje niczego.</li>
+            <li><code>NPC(Vector2f position, Texture* texture)</code> – tworzy NPC w pozycji <code>position</code>, przypisuje teksturę do kształtu, inicjalizuje cień.</li>
+        </ul>
+        </li>
+
+        <li><strong>Pola prywatne:</strong>
+        <ul>
+            <li><code>Texture npcT</code> – tekstura NPC (aktualnie nieużywana w kodzie).</li>
+            <li><code>float x, y</code> – pozycja NPC na mapie (w jednostkach kafelków).</li>
+            <li><code>RectangleShape shape</code> – graficzny obiekt reprezentujący NPC.</li>
+            <li><code>RectangleShape shadowSprite</code> – graficzny obiekt reprezentujący cień NPC.</li>
+        </ul>
+        </li>
+
+        <li><strong>Metody publiczne:</strong>
+        <ul>
+            <li><code>bool checkCollision(float pX, float pY)</code> – sprawdza kolizję NPC z punktem <code>(pX, pY)</code>, zwraca true jeśli odległość w obu osiach jest mniejsza niż 0.5.</li>
+            <li><code>float getX()</code> – zwraca współrzędną X NPC.</li>
+            <li><code>float getY()</code> – zwraca współrzędną Y NPC.</li>
+            <li><code>void draw(RenderWindow &window, float displaySize, float cameraX, float cameraY, float tileSize, float deltaTime)</code>
+            <ul>
+                <li>Rysuje NPC i jego cień na ekranie z uwzględnieniem pozycji kamery oraz skali wyświetlania.</li>
+                <li>Ustawia rozmiary kształtów według rozmiaru kafelka.</li>
+                <li>Oblicza pozycję cienia względem NPC i ustawia odpowiednią teksturę cienia.</li>
+            </ul>
+            </li>
+        </ul>
+        </li>
+        </ul> 
+        </section>
+        <section id = "platform">
+        <h2>Klasa Platform</h2>
+        <ul>
+            <li>Reprezentuje prostokątną platformę w grze, z możliwością ustawienia rozmiaru, pozycji i koloru.</li>
+
+            <li><strong>Pole publiczne:</strong>
+            <ul>
+                <li><code>RectangleShape shape</code> – prostokątny kształt reprezentujący platformę.</li>
+            </ul>
+            </li>
+
+            <li><strong>Konstruktor:</strong>
+            <ul>
+                <li><code>Platform(Vector2f size, Vector2f position, Color color)</code> – tworzy platformę o zadanym rozmiarze, pozycji oraz kolorze.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section>
+        <h2>Klasa Player</h2>
+        <ul>
+            <li>Reprezentuje gracza w świecie gry z obsługą ruchu, kolizji, animacji i dźwięków kroków.</li>
+
+            <li><strong>Konstruktory:</strong>
+            <ul>
+                <li><code>Player()</code> – konstruktor domyślny, inicjalizuje wartości domyślne parametrów gracza.</li>
+                <li><code>Player(float startX, float startY, Map worldMap)</code> – tworzy gracza na pozycji <code>(startX, startY)</code> z przypisaną mapą świata <code>worldMap</code>, ładuje tekstury i ustawia stan początkowy.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola prywatne:</strong>
+            <ul>
+                <li><code>action state</code> – aktualny stan gracza (np. <code>idle</code> lub <code>walk</code>).</li>
+                <li><code>int facing</code> – kierunek, w którym patrzy gracz (0: dół, 1: góra, 2: prawo, 3: lewo).</li>
+                <li><code>int frameTimer, walkFrame</code> – liczniki animacji chodzenia.</li>
+                <li><code>bool canFootstep</code> – flaga sterująca odtwarzaniem dźwięków kroków.</li>
+                <li><code>float acc, res</code> – przyspieszenie i opór gracza (wpływające na ruch).</li>
+                <li><code>float collisionBoxWidth, collisionBoxHeight</code> – rozmiar pola kolizji gracza.</li>
+                <li><code>float x, y</code> – aktualna pozycja gracza na mapie (w jednostkach kafelków).</li>
+                <li><code>float velocityX, velocityY</code> – prędkość gracza na osiach X i Y.</li>
+                <li><code>Map worldMap</code> – mapa świata, na której porusza się gracz (potrzebna do sprawdzania kolizji i podłoża).</li>
+                <li><code>RectangleShape playerSprite</code> – graficzny obiekt reprezentujący postać gracza.</li>
+                <li><code>RectangleShape shadowSprite</code> – graficzny obiekt reprezentujący cień gracza.</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody publiczne:</strong>
+            <ul>
+                <li><code>void tickPlayer(float deltaTime)</code> – aktualizuje stan gracza co klatkę: obsługuje wejście klawiatury, ruch, animacje i dźwięki kroków.</li>
+                <li><code>void draw(RenderWindow &window, float displaySize, float cameraX, float cameraY, float tileSize, float deltaTime)</code> – rysuje gracza i jego cień na ekranie z uwzględnieniem kamery i rozmiaru kafelka.</li>
+                <li><code>bool checkCollision()</code> – sprawdza, czy gracz koliduje z którymkolwiek kafelkiem kolizyjnym na mapie.</li>
+                <li><code>float getX()</code> – zwraca aktualną współrzędną X gracza.</li>
+                <li><code>float getY()</code> – zwraca aktualną współrzędną Y gracza.</li>
+                <li><code>void moveX(float amount)</code> – przesuwa gracza w poziomie o <code>amount</code>, uwzględniając kolizje.</li>
+                <li><code>void moveY(float amount)</code> – przesuwa gracza w pionie o <code>amount</code>, uwzględniając kolizje.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section id = "pociski (eufemia)">
+        <h2>Klasa Projectile</h2>
+        <ul>
+            <li>Reprezentuje pocisk w grze, który porusza się z określoną prędkością i jest rysowany jako żółte koło.</li>
+
+            <li><strong>Konstruktor:</strong>
+            <ul>
+                <li><code>Projectile(float x, float y, Vector2f vel)</code> – tworzy pocisk o promieniu 10 jednostek, ustawia jego kolor na żółty, pozycję na <code>(x, y)</code> oraz prędkość na <code>vel</code>.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola publiczne:</strong>
+            <ul>
+                <li><code>CircleShape shape</code> – graficzny obiekt reprezentujący pocisk (żółte koło).</li>
+                <li><code>Vector2f velocity</code> – wektor prędkości pocisku.</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody publiczne:</strong>
+            <ul>
+                <li><code>void update(float deltaTime)</code> – aktualizuje pozycję pocisku, przesuwając go o <code>velocity * deltaTime</code>.</li>
+                <li><code>void draw(RenderWindow &window)</code> – rysuje pocisk na ekranie.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section id = "plytki">
+        <h2>Klasa Tile</h2>
+        <ul>
+            <li>Reprezentuje pojedynczy kafelek mapy z właściwościami dotyczącymi grafiki, dźwięku i kolizji.</li>
+
+            <li><strong>Konstruktory:</strong>
+            <ul>
+                <li><code>Tile(int x, int y, Color loadColor, int soundGroup, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide)</code>  
+                – tworzy kafelek z podstawowymi właściwościami: pozycją w tileset, kolorem do ładowania, grupą dźwiękową, liczbą subtile, oraz flagami dotyczącymi nakładania, łączenia i kolizji.</li>
+                <li><code>Tile(int x, int y, Color loadColor, int soundGroup, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int overlayId)</code>  
+                – rozszerzony konstruktor dodający informacje o nakładce (overlay) — jej pozycję i identyfikator.</li>
+                <li><code>Tile(int x, int y, Color loadColor, int soundGroup, int subtileCount, bool canBeOverlayed, bool canConnect, bool canCollide, int overlayX, int overlayY, int connectX, int connectY, vector&lt;int&gt; connections, int overlayId)</code>  
+                – najbardziej rozbudowany konstruktor uwzględniający pozycję nakładki, pozycję łączenia (connectX, connectY), listę możliwych połączeń oraz identyfikator nakładki.</li>
+                <li><code>Tile()</code> – konstruktor domyślny, nie inicjalizuje żadnych pól.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola publiczne:</strong>
+            <ul>
+                <li><code>int tilesetX, tilesetY</code> – pozycja kafelka w zestawie kafelków (tileset).</li>
+                <li><code>Color loadColor</code> – kolor używany do ładowania kafelka.</li>
+                <li><code>int soundGroup</code> – grupa dźwiękowa przypisana do kafelka.</li>
+                <li><code>int subtileCount</code> – liczba subtile w kafelku.</li>
+                <li><code>bool canBeOverlayed</code> – czy kafelek może mieć nakładkę (overlay).</li>
+                <li><code>bool canConnect</code> – czy kafelek może się łączyć z innymi kafelkami.</li>
+                <li><code>bool canCollide</code> – czy kafelek powoduje kolizję.</li>
+                <li><code>int overlayX, overlayY</code> – pozycja nakładki na tileset.</li>
+                <li><code>int connectX, connectY</code> – pozycja do łączenia kafelków.</li>
+                <li><code>vector&lt;int&gt; connections</code> – lista identyfikatorów kafelków, z którymi może się łączyć ten kafelek.</li>
+                <li><code>int overlayId</code> – identyfikator nakładki.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section id = "ui">
+        <h2>Klasa UI</h2>
+        <ul>
+            <li>Reprezentuje interfejs użytkownika z paskami zdrowia gracza i bossa.</li>
+
+            <li><strong>Konstruktor:</strong>
+            <ul>
+                <li><code>UI(Vector2u windowSize, int playerHP, int bossHP)</code>  
+                – tworzy elementy paska zdrowia dla gracza i bossa, ustawia ich rozmiar, kolor i pozycję na ekranie względem rozmiaru okna oraz początkowego zdrowia.</li>
+            </ul>
+            </li>
+
+            <li><strong>Pola publiczne:</strong>
+            <ul>
+                <li><code>RectangleShape hpBar</code> – pasek zdrowia gracza (czerwony).</li>
+                <li><code>RectangleShape hpBarBack</code> – tło paska zdrowia gracza (szare).</li>
+                <li><code>RectangleShape bossHpBar</code> – pasek zdrowia bossa (zielony).</li>
+                <li><code>RectangleShape bossHpBarBack</code> – tło paska zdrowia bossa (szare).</li>
+            </ul>
+            </li>
+
+            <li><strong>Metody publiczne:</strong>
+            <ul>
+                <li><code>void update(int playerHP, int bossHP)</code>  
+                – aktualizuje szerokość pasków zdrowia gracza i bossa zgodnie z aktualnym poziomem życia.</li>
+            </ul>
+            </li>
+        </ul>
+        </section>
+        <section id = "World Map">
+        <h2>Klasa WorldMap</h2>
+        <p>Klasa zarządzający ładowaniem świata gry, sterowaniem kamerą, wywoływaniem ticków aktualizacyjnych oraz rysowaniem świata i postaci na ekranie.</p>
+
+        <h3>Zmienna globalne</h3>
+        <ul>
+            <li><code>Texture euf</code> – tekstura dla NPC Eufemii (bossa).</li>
+            <li><code>Texture blak</code> – tekstura dla NPC "black guy".</li>
+            <li><code>Map world</code> – instancja mapy świata.</li>
+            <li><code>Player playerM</code> – instancja gracza.</li>
+            <li><code>NPC eufemia</code> – instancja NPC bossa Eufemii.</li>
+            <li><code>NPC npc2</code> – instancja drugiego NPC.</li>
+            <li><code>const float worldDisplaySize</code> – skala wyświetlania świata (4.0).</li>
+            <li><code>const float tileSize</code> – rozmiar pojedynczej kafelki (32 piksele).</li>
+            <li><code>const float displaySize</code> – rozmiar wyświetlanego kafelka w świecie (worldDisplaySize * tileSize).</li>
+            <li><code>float cameraX, cameraY</code> – aktualna pozycja kamery na osi X i Y.</li>
+            <li><code>float camLimitX, camLimitY</code> – granice ruchu kamery na osi X i Y.</li>
+        </ul>
+
+        <h3>Funkcje</h3>
+        <ul>
+            <li><code>void loadMap(const char* path)</code>  
+            – ładuje tekstury, tworzy mapę ze wskazanej ścieżki, inicjalizuje gracza i NPC z odpowiednimi pozycjami i teksturami.</li>
+
+            <li><code>void worldTick(float deltaTime)</code>  
+            – wykonuje tick (aktualizację) logiki świata, w tym ruch i zachowanie gracza.</li>
+
+            <li><code>bool checkEufemia()</code>  
+            – sprawdza czy klawisz Enter jest wciśnięty i czy gracz znajduje się w kolizji z NPC Eufemią.</li>
+
+            <li><code>bool checkBlack()</code>  
+            – sprawdza czy klawisz Enter jest wciśnięty i czy gracz znajduje się w kolizji z NPC "black guy".</li>
+
+            <li><code>void displayWorld(RenderWindow& window, Vector2u window_size, float deltaTime)</code>  
+            – ustawia pozycję kamery względem gracza z ograniczeniami, rysuje mapę i postaci na ekranie, zapewnia odpowiednią kolejność warstw (głębię) według pozycji Y postaci.</li>
+        </ul>
+        </section>
+        <section id = "Gra">
+        <h2>Game</h2>
+        <p>Główna pętla gry odpowiedzialna za zarządzanie stanami gry, renderowanie interfejsu, obsługę logiki rytmicznej walki, inicjalizację postaci, przeciwników, muzyki oraz grafiki.</p>
+
+        <h3>Zmienne globalne i stałe</h3>
+        <ul>
+            <li><code>Vector2u WINDOW_SIZE</code> – rozmiar okna gry (1920×1080).</li>
+            <li><code>const float PLAYER_SIZE</code> – rozmiar gracza (50 pikseli).</li>
+            <li><code>const float MOVE_SPEED</code> – prędkość poruszania się gracza.</li>
+            <li><code>const int NUM_LANES</code> – liczba linii (ścieżek) w trybie rytmicznym (6).</li>
+            <li><code>float NOTE_SPEED</code> – prędkość spadania nut w trybie rytmicznym.</li>
+            <li><code>const float SPAWN_INTERVAL</code> – odstęp czasowy między generowaniem nut.</li>
+            <li><code>const float NOTE_RADIUS</code> – promień nuty.</li>
+            <li><code>const float TARGET_Y</code> – pionowa pozycja celu, na której nuty powinny być trafione.</li>
+            <li><code>const float HIT_WINDOW</code> – dopuszczalna różnica pozycji nuty względem celu dla uznania trafienia.</li>
+            <li><code>const int MAX_NOTES</code> – maksymalna liczba nut w jednej rozgrywce.</li>
+            <li><code>const int MAX_MISSES</code> – maksymalna liczba nieudanych trafień przed porażką.</li>
+        </ul>
+
+        <h3>Struktury</h3>
+        <ul>
+            <li><code>struct Note</code> – reprezentuje nutę w grze rytmicznej.
+            <ul>
+                <li><code>CircleShape shape</code> – graficzna reprezentacja nuty.</li>
+                <li><code>int lane</code> – indeks ścieżki, na której znajduje się nuta.</li>
+                <li><code>bool active</code> – informacja, czy nuta nadal jest aktywna.</li>
+                <li><code>update(float dt)</code> – aktualizuje pozycję nuty w czasie (spadanie).</li>
+            </ul>
+            </li>
+        </ul>
+
+        <h3>Funkcje</h3>
+        <ul>
+            <li><code>void handleInput(Vector2f& movement)</code>  
+            – obsługuje wejście z klawiatury w celu poruszania postacią gracza. Wykrywa klawisze W, A, S, D.</li>
+
+            <li><code>int main()</code>  
+            – punkt wejściowy programu. Inicjalizuje wszystkie zasoby gry: muzykę, grafikę, postaci, interfejs i uruchamia główną pętlę gry, w której przetwarzane są stany gry (menu, walka, mapa świata itp.).</li>
+        </ul>
+
+        <h3>Inicjalizowane zasoby</h3>
+        <ul>
+            <li><code>Texture</code> – tekstury dla tła, postaci, bossów, kryształów, areny.</li>
+            <li><code>Music</code> – ścieżki dźwiękowe (muzyka tła, zwycięstwa, porażki, ambient, tryby rytmiczne).</li>
+            <li><code>Font</code> – czcionki używane do tekstu w menu, interfejsie i wynikach.</li>
+            <li><code>Text</code> – obiekty tekstowe do wyświetlania punktacji, opcji menu, statusów gry.</li>
+            <li><code>RectangleShape</code> – paski zdrowia, belki celu, efekty ekranu (flash).</li>
+            <li><code>Hero</code> – instancja gracza do walki z bossem.</li>
+            <li><code>Boss</code> – instancja bossa Eufemii.</li>
+            <li><code>Crystal</code> – instancje dwóch kryształów wspomagających bossa.</li>
+            <li><code>vector&lt;Projectile&gt;</code> – pociski wrogów używane przez bossa.</li>
+            <li><code>Platform</code> – podłoga areny walki.</li>
+        </ul>
+
+        <h3>Obsługiwane stany gry (<code>enum GameState</code>)</h3>
+        <ul>
+            <li><code>Menu</code> – główne menu gry.</li>
+            <li><code>Settings</code> – ustawienia (głośność, ekran).</li>
+            <li><code>Credits</code> – ekran z twórcami gry.</li>
+            <li><code>Game</code> – główny tryb walki z bossem.</li>
+            <li><code>BossSelect</code> – wybór bossa do walki.</li>
+            <li><code>GameOptions</code> – opcje podczas gry.</li>
+            <li><code>Guitar</code> – tryb rytmiczny (mini-gra).</li>
+            <li><code>Eufemia</code> – walka z bossem Eufemią.</li>
+            <li><code>World</code> – eksploracja świata gry.</li>
+            <li><code>EndScreen</code> – ekran końcowy (zwycięstwo lub przegrana).</li>
+        </ul>
         </section>
 
-        <section id="CRYSTAL">
-            <h2>Klasa kryształu</h2>
-            <p>Zawiera tworzenie kryształów które strzelają w gracz</p>
-            <ul>
-                <li><strong>Konstruktor Crystal</strong> – tworzy obiekt kryształu, ustawia teksturę, życie i okrąg według które ma się obracać </li>
-                <li><strong>Update</strong> – Aktualizacja pozycji kryształu ze względu na obracanie</li>
-                <li><strong>takeDamage, isAlive i getHP</strong> – otrzymuje obrażenia, sprawdza czy żyje i pobiera Hp </li>
-                <li><strong>getGlobalBounds</strong> - pobiera hitbox kryształu</li>
-            </ul>
-        </section>
 
-        <section id="PROJECTILE">
-            <h2>Klasa obiektów</h2>
-            <p>Zawiera tworzenie pocisków kryształó</p>
-            <ul>
-                <li><strong>Konstruktor PROJECTILE</strong> – tworzy pocisk którym strzelają kryształy</li>
-                <li><strong>Update i draw</strong> – Aktualizacja pozycji pocisku i rysowanie go </li>
-            </ul>
-        </section>
 
-        <section id="UI">
-            <h2>Hpbars</h2>
-            <p>Zawiera tworzenie pasków życia </p>
-            <ul>
-                <li><strong>UI</strong> – tworzy paski życia dla gracza,kryształów i bossa </li>
-                <li><strong>Update</strong> – Aktualizacja pasku życia </li>
-            </ul>
-        </section>
 
-        <section id="PLATFORM">
-            <h2>Platforma</h2>
-            <p>Zawiera tworzenie platformu n aktórej stoi gracz </p>
-            <ul>
-                <li><strong>Platform</strong> – tworzy platformę </li>
-            </ul>
-        </section>
+
+
     </main>
 
     <footer>
         &copy; 2025 Gra RPG w SFML – Projekt Open Source
+        <a href="#Strona" id = "return">Powrót</a>
     </footer>
 </body>
 </html>
